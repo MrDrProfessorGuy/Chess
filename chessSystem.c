@@ -1,31 +1,44 @@
 #include "chessSystem.h"
 #include "assert.h"
 #include "map.h"
+#include "stdbool.h"
 
+/***** typedef *****/
+typedef const int PlayerId;
+typedef const int GameId;
+typedef const int TournamentId;
+
+typedef const char* Location;
 
 struct chess_system_t{
     Map list_of_tournament;
-};
-
-struct tournament_data{
-    char* location;
-    int winner_id;
-    int max_games_per_player;
-    Map list_of_games;
-    Map list_of_players;//int Key = player_id
+    Map player_list;// Key = player_id
 };
 
 struct player_data{
-    int games_num;
-    int level;
-    int average_playtime;
+    int num_of_games; // used to calculate averages when needed
+    int num_of_wins; // used to calculate Level
+    int num_of_loses; // used to calculate Level
+    int num_of_draws; // used to calculate Level
+    int total_play_time; // used to calculate average playtime
+};
+
+struct tournament_data{
+    Location location;
+    int max_games_per_player;
+    bool has_ended;
+    Map game_list;
+    int num_of_players; // printed in tournament statistics
+    int longest_game_time; // printed in tournament statistics
+    long total_game_time; // used for tournament statistics
+    PlayerId winner;
 };
 
 struct game_data{
-    char* location;
-    Winner winner_id;
-    int player1_id;
-    int player2_id;
+    int play_time;
+    PlayerId player1_id;
+    PlayerId player2_id;
+    Winner winner;
 };
 
 
