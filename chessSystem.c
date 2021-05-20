@@ -4,6 +4,17 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+
+/**
+ *
+ *              ################ NOTE! ################
+ * he new update says that max_games_per_player is per tournament and not
+ * counted by the total games a player has played, therefor we should update how the
+ * ADT's are connected
+ */
+
+
+
 /***** typedef *****/
 typedef int* PlayerId;// Key = player_id
 typedef struct player_data* PlayerData;
