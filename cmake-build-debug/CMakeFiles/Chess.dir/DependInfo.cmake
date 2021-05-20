@@ -5,6 +5,7 @@ set(CMAKE_DEPENDS_LANGUAGES
 # The set of files for implicit dependencies of each language:
 set(CMAKE_DEPENDS_CHECK_C
   "/Users/guycohen/OneDrive - Technion/1 Courses/מבוא לתכנות מערכות/HW/HW1/Chess/chessSystem.c" "/Users/guycohen/OneDrive - Technion/1 Courses/מבוא לתכנות מערכות/HW/HW1/Chess/cmake-build-debug/CMakeFiles/Chess.dir/chessSystem.c.o"
+  "/Users/guycohen/OneDrive - Technion/1 Courses/מבוא לתכנות מערכות/HW/HW1/Chess/main.c" "/Users/guycohen/OneDrive - Technion/1 Courses/מבוא לתכנות מערכות/HW/HW1/Chess/cmake-build-debug/CMakeFiles/Chess.dir/main.c.o"
   )
 set(CMAKE_C_COMPILER_ID "GNU")
 

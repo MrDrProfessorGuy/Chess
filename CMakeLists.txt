@@ -8,4 +8,5 @@ include_directories(.)
 add_executable(Chess
         chessSystem.h
         chessSystem.c
+        main.c
         libmap.a)

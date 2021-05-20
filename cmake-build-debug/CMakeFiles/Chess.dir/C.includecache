@@ -1,0 +1,20 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/Users/guycohen/OneDrive - Technion/1 Courses/מבוא לתכנות מערכות/HW/HW1/Chess/chessSystem.h
+stdio.h
+-
+
+/Users/guycohen/OneDrive - Technion/1 Courses/מבוא לתכנות מערכות/HW/HW1/Chess/main.c
+stdlib.h
+-
+stdio.h
+-
+chessSystem.h
+/Users/guycohen/OneDrive - Technion/1 Courses/מבוא לתכנות מערכות/HW/HW1/Chess/chessSystem.h
+

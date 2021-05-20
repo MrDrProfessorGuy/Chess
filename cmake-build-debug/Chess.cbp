@@ -99,6 +99,9 @@
 		<Unit filename="/Users/guycohen/OneDrive - Technion/1 Courses/מבוא לתכנות מערכות/HW/HW1/Chess/libmap.a">
 			<Option target="Chess"/>
 		</Unit>
+		<Unit filename="/Users/guycohen/OneDrive - Technion/1 Courses/מבוא לתכנות מערכות/HW/HW1/Chess/main.c">
+			<Option target="Chess"/>
+		</Unit>
 		<Unit filename="/Users/guycohen/OneDrive - Technion/1 Courses/מבוא לתכנות מערכות/HW/HW1/Chess/CMakeLists.txt">
 			<Option virtualFolder="CMake Files\"/>
 		</Unit>
