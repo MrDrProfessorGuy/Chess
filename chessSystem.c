@@ -44,6 +44,8 @@ static int comparePlayerId(PlayerId id1, PlayerId id2);
 static PlayerId createPlayerId(int player1_id);
 static PlayerData createPlayerData();
 static bool addPlayer(Map player_map, PlayerId id);
+static bool playerIdIsValid(PlayerId id);
+
 
 /********************* Tournament functions *********************/
 static void freeTournamentData(TournamentData data);
@@ -64,19 +66,11 @@ static GameData copyGameData(GameData data);
 static GameId copyGameId(GameId id);
 static int compareGameId(GameId id1, GameId id2);
 
-static GameId createGameId(PlayerId player1_id, PlayerId player2_id);
-static GameData createGameData(int play_time, Winner winner);
-static GameData addGame(Map game_map, int play_time, Winner winner,
-                        PlayerId player1_id, PlayerId player2_id, ChessResult* error){
-    if (!game_map){
-        *error = CHESS_NULL_ARGUMENT;
-    }
-    GameData game_data = createGameData(play_time, winner);
-    if (!game_data){
-        return CHESS_OUT_OF_MEMORY;
-    }
-}
-
+static GameId createGameId(PlayerId player1_id, PlayerId player2_id, ChessResult* result);
+static GameData createGameData(int play_time, Winner winner, ChessResult* result);
+static ChessResult addGame(Map game_map, int play_time, Winner winner,
+                        PlayerId player1_id, PlayerId player2_id);
+static bool validPlayTime(int play_time);
 
 
 struct chess_system_t{
@@ -210,8 +204,9 @@ static bool hasTournamentEnded(ChessSystem chess, TournamentId id){
  * @return
  */
 static bool gameExists(Map game_map, PlayerId player_id1, PlayerId player_id2){
+    ChessResult chess_result = CHESS_SUCCESS;
     bool result = false;
-    GameId game_id = createGameId(player_id1, player_id2);
+    GameId game_id = createGameId(player_id1, player_id2, &chess_result);
     if (!game_id || !game_map){
         return false;
     }
@@ -230,9 +225,14 @@ static bool gameExists(Map game_map, PlayerId player_id1, PlayerId player_id2){
  * @return
  * NULL - if failed
  */
-static GameData createGameData(int play_time, Winner winner){
+static GameData createGameData(int play_time, Winner winner, ChessResult* result){
+    if (!validPlayTime(play_time)){
+        *result = CHESS_INVALID_PLAY_TIME;
+        return NULL;
+    }
     GameData gameData = malloc(sizeof(*gameData));
     if (!gameData){
+        *result = CHESS_OUT_OF_MEMORY;
         return NULL;
     }
     gameData->play_time = play_time;
@@ -245,6 +245,36 @@ static bool validPlayTime(int play_time){
     }
     return false;
 }
+static ChessResult addGame(Map game_map, int play_time, Winner winner,
+                           PlayerId player1_id, PlayerId player2_id){
+    ChessResult result = CHESS_SUCCESS;
+    if (!game_map){
+        return CHESS_NULL_ARGUMENT;
+    }
+    GameData game_data = createGameData(play_time, winner, &result);
+    if (!game_data){
+        assert(result != CHESS_SUCCESS);
+        return result;
+    }
+    GameId game_id = createGameId(player1_id, player2_id, &result);
+    if (!game_id){
+        assert(result != CHESS_SUCCESS);
+        freeGameData(game_data);
+        return result;
+    }
+    if (mapPut(game_map, game_id, game_data) != MAP_SUCCESS){
+        freeGameData(game_data);
+        freeGameId(game_id);
+        return CHESS_OUT_OF_MEMORY;
+    }
+    return CHESS_SUCCESS;
+}
+
+
+
+
+
+
 
 
 /*************************************************************/
