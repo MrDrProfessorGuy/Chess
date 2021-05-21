@@ -1,5 +1,4 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/Chess.dir/chessSystem.c.o"
   "CMakeFiles/Chess.dir/main.c.o"
   "Chess"
   "Chess.pdb"
