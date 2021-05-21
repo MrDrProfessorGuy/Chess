@@ -41,10 +41,34 @@ static PlayerData copyPlayerData(PlayerData data);
 static PlayerId copyPlayerId(PlayerId id);
 static int comparePlayerId(PlayerId id1, PlayerId id2);
 
+static bool playerIdIsValid(PlayerId id);
 static PlayerId createPlayerId(int player1_id);
 static PlayerData createPlayerData();
-static bool addPlayer(Map player_map, PlayerId id);
-static bool playerIdIsValid(PlayerId id);
+static ChessResult addPlayer(Map player_map, PlayerId player_id){
+    if (!player_map){
+        return CHESS_NULL_ARGUMENT;
+    }
+    if (!playerIdIsValid(player_id)){
+        return CHESS_INVALID_ID;
+    }
+    PlayerId id = createPlayerId(*player_id);
+    if (!id){
+        return CHESS_OUT_OF_MEMORY;
+    }
+    PlayerData data = createPlayerData();
+    if (!data){
+        frePlayerId(id);
+        return CHESS_OUT_OF_MEMORY;
+    }
+    
+    if (mapPut(player_map, id, data) != MAP_SUCCESS){
+        frePlayerId(id);
+        freePlayerData(data);
+        return CHESS_OUT_OF_MEMORY;
+    }
+    return CHESS_SUCCESS;
+}
+
 
 
 /********************* Tournament functions *********************/
@@ -391,11 +415,11 @@ ChessResult chessAddGame(ChessSystem chess, int tournament_id, int first_player,
     assert(player_map); // player map should be valid
     
     PlayerData player1 = mapGet(player_map, &first_player);
-    if (player1 == NULL && !addPlayer(player_map, &first_player)){// player doesn't exist ==> add him to the map
+    if (player1 == NULL && addPlayer(player_map, &first_player) != CHESS_SUCCESS){// player doesn't exist ==> add him to the map
         return CHESS_OUT_OF_MEMORY;
     }
     PlayerData player2 = mapGet(player_map, &second_player);
-    if (player2 == NULL && !addPlayer(player_map, &second_player)){// player doesn't exist ==> add him to the map
+    if (player2 == NULL && addPlayer(player_map, &second_player) != CHESS_SUCCESS){// player doesn't exist ==> add him to the map
         return CHESS_OUT_OF_MEMORY;
     }
     
@@ -406,76 +430,6 @@ ChessResult chessAddGame(ChessSystem chess, int tournament_id, int first_player,
     
     return addGame(game_map, play_time, winner, &first_player, &second_player);
 }
-
-
-ChessResult chessAddGame2(ChessSystem chess, int tournament_id, int first_player,
-                         int second_player, Winner winner, int play_time) {
-    
-    if (chess){
-        if (tournamentIdIsValid(&tournament_id) || playerIdIsValid(&first_player) ||
-            playerIdIsValid(&second_player) || comparePlayerId(&first_player, &second_player)){
-            
-            if (mapContains(chess->tournament_map, &tournament_id)){
-                // get tournament data and check if it has ended
-                TournamentData tournament_data = mapGet(chess->tournament_map, &tournament_id);
-                if (tournament_data->has_ended == false){
-                    // get game map and check if it's valid
-                    Map game_map = tournament_data->game_map;
-                    assert(game_map);
-                    // make the game id, exit if malloc failed
-                    GameId game_id = createGameId(&first_player, &second_player);
-                    if (!game_id){
-                        return CHESS_OUT_OF_MEMORY;
-                    }
-                    // check if the game already exists
-                    if (mapContains(game_map, game_id) == false){
-                        // check if play_time is valid
-                        if (validPlayTime(play_time)){
-                            Map player_map = tournament_data->player_map;
-                            assert(player_map); /// player map should be valid
-                            PlayerData player1 = mapGet(player_map, &first_player);
-                            if (player1 == NULL){/// player doesn't exist ==> add him to the map
-                                if (!addPlayer(player_map, &first_player)){
-                                    freeGameId(game_id);
-                                    return CHESS_OUT_OF_MEMORY;
-                                }
-                            }
-                            PlayerData player2 = mapGet(player_map, &second_player);
-                            if (player2 == NULL){/// player doesn't exist ==> add him to the map
-                                if (!addPlayer(player_map, &second_player)){
-                                    freeGameId(game_id);
-                                    /// mapRemove(player_map, &first_player); maybe he is in other games as well...
-                                    return CHESS_OUT_OF_MEMORY;
-                                }
-                            }
-                            if (player1->num_of_games < tournament_data->max_games_per_player ||
-                                player2->num_of_games <>=> tournament_data->max_games_per_player){
-                                GameData game_data = createGameData(play_time, winner);
-                                if (game_data){
-                                    mapPut(game_map, game_id, game_data);
-                                    return CHESS_SUCCESS;
-                                }
-                                freeGameId(game_id);
-                                return CHESS_OUT_OF_MEMORY;
-                            }
-                            freeGameId(game_id);
-                            return CHESS_EXCEEDED_GAMES;
-                        }
-                        freeGameId(game_id);
-                        return CHESS_INVALID_PLAY_TIME;
-                    }
-                    freeGameId(game_id);
-                    return CHESS_GAME_ALREADY_EXISTS;
-                }
-                return CHESS_TOURNAMENT_ENDED;
-            }
-            return CHESS_TOURNAMENT_NOT_EXIST;
-        }
-        return CHESS_INVALID_ID;
-    }
-    return CHESS_NULL_ARGUMENT;
-}
-
 
 /**
  * chessRemoveTournament: removes the tournament and all the games played in it from the chess system
