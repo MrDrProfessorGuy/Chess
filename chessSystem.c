@@ -12,6 +12,30 @@
  * counted by the total games a player has played, therefor I moved the player map
  * to the Tournament Data (from the main Chess_System Struct)
  */
+ 
+/**
+ *
+ *               ################ Return Values ################
+ *
+ * CHESS_NULL_ARGUMENT
+ * CHESS_INVALID_ID
+ * CHESS_TOURNAMENT_NOT_EXIST
+ * CHESS_TOURNAMENT_ENDED
+ * CHESS_TOURNAMENT_ALREADY_EXISTS
+ * CHESS_INVALID_LOCATION
+ * CHESS_INVALID_MAX_GAMES
+ * CHESS_INVALID_PLAY_TIME
+ * CHESS_N0_GAMES
+ * CHESS_PLAYER_NOT_EXIST
+ * CHESS_EXCEEDED_GAMES
+ * CHESS_SAVE_FAILURE
+ * CHESS_SUCCESS
+ */
+
+
+
+
+
 
 #define PLAYER_SEPARATOR '#'
 
@@ -44,30 +68,7 @@ static int comparePlayerId(PlayerId id1, PlayerId id2);
 static bool playerIdIsValid(PlayerId id);
 static PlayerId createPlayerId(int player1_id);
 static PlayerData createPlayerData();
-static ChessResult addPlayer(Map player_map, PlayerId player_id){
-    if (!player_map){
-        return CHESS_NULL_ARGUMENT;
-    }
-    if (!playerIdIsValid(player_id)){
-        return CHESS_INVALID_ID;
-    }
-    PlayerId id = createPlayerId(*player_id);
-    if (!id){
-        return CHESS_OUT_OF_MEMORY;
-    }
-    PlayerData data = createPlayerData();
-    if (!data){
-        frePlayerId(id);
-        return CHESS_OUT_OF_MEMORY;
-    }
-    
-    if (mapPut(player_map, id, data) != MAP_SUCCESS){
-        frePlayerId(id);
-        freePlayerData(data);
-        return CHESS_OUT_OF_MEMORY;
-    }
-    return CHESS_SUCCESS;
-}
+static ChessResult addPlayer(Map player_map, PlayerId player_id);
 
 
 
@@ -184,6 +185,35 @@ static char* playersIdToGameId(int player1_id, int player2_id){
 
 
 /********************* Player functions *********************/
+static void freePlayerData(PlayerData data){
+    free(data);
+}
+static void frePlayerId(PlayerId id){
+    free(id);
+}
+static int comparePlayerId(PlayerId id1, PlayerId id2){
+    return (*id1 - *id2);
+}
+static PlayerData copyPlayerData(PlayerData data){
+    PlayerData data_copy = createPlayerData();
+    if (!data){
+        return NULL;
+    }
+    data_copy->num_of_games = data->num_of_games;
+    data_copy->num_of_wins = data->num_of_wins;
+    data_copy->num_of_loses = data->num_of_loses;
+    data_copy->num_of_draws = data->num_of_draws;
+    data_copy->total_play_time = data->total_play_time;
+    
+    return data_copy;
+}
+static PlayerId copyPlayerId(PlayerId id){
+    PlayerId id_copy = createPlayerId(*id);
+    if (!id_copy){
+        return NULL;
+    }
+    return id_copy;
+}
 /**
  * tournamentIdIsValid:
  *
@@ -196,6 +226,51 @@ static bool playerIdIsValid(PlayerId id){
         return true;
     }
     return false;
+}
+static PlayerData createPlayerData(){
+    PlayerData data = malloc(sizeof(*data));
+    if (!data){
+        return NULL;
+    }
+    data->num_of_games = 0;
+    data->num_of_wins = 0;
+    data->num_of_loses = 0;
+    data->num_of_draws = 0;
+    data->total_play_time = 0;
+    
+    return data;
+}
+static PlayerId createPlayerId(int player1_id){
+    PlayerId id = malloc(sizeof(int));
+    if (!id){
+        return NULL;
+    }
+    *id = player1_id;
+    return id;
+}
+static ChessResult addPlayer(Map player_map, PlayerId player_id){
+    if (!player_map){
+        return CHESS_NULL_ARGUMENT;
+    }
+    if (!playerIdIsValid(player_id)){
+        return CHESS_INVALID_ID;
+    }
+    PlayerId id = createPlayerId(*player_id);
+    if (!id){
+        return CHESS_OUT_OF_MEMORY;
+    }
+    PlayerData data = createPlayerData();
+    if (!data){
+        frePlayerId(id);
+        return CHESS_OUT_OF_MEMORY;
+    }
+    
+    if (mapPut(player_map, id, data) != MAP_SUCCESS){
+        frePlayerId(id);
+        freePlayerData(data);
+        return CHESS_OUT_OF_MEMORY;
+    }
+    return CHESS_SUCCESS;
 }
 
 /********************* Tournament functions *********************/
