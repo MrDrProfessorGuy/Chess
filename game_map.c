@@ -8,11 +8,11 @@ typedef struct game_data* GameData;
 
 /***************************************************************/
 /********************* Game functions *********************/
-static void freeGameData(GameData data);
-static void freeGameId(GameId id);
-static GameData copyGameData(GameData data);
-static GameId copyGameId(GameId id);
-static int compareGameId(GameId id1, GameId id2);
+static void freeGameData(MapDataElement data);
+static void freeGameId(MapKeyElement id);
+static MapDataElement copyGameData(MapDataElement data);
+static MapKeyElement copyGameId(MapKeyElement id);
+static int compareGameId(MapKeyElement id1, MapKeyElement id2);
 
 static GameId createGameId(PlayerId player1_id, PlayerId player2_id, GameResult* result);
 static GameData createGameData(int play_time, Winner winner, GameResult* result);
@@ -22,7 +22,6 @@ static bool gameIdIsValid(GameId game_id);
 static bool validPlayTime(int play_time);
 static bool playerIdIsValid(PlayerId player_id);
 static void orderPlayerIds(PlayerId* id1, PlayerId* id2);
-
 
 
 struct game_id{
@@ -73,7 +72,7 @@ static char* playersIdToGameId(int player1_id, int player2_id){
 
 
 
-/***************************************************************/
+/***********************************************************/
 /********************* Game functions *********************/
 void freeGameData(GameData data);
 void freeGameId(GameId game_id){

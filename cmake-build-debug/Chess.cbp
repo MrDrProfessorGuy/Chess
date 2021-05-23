@@ -90,13 +90,13 @@
 				</MakeCommands>
 			</Target>
 		</Build>
+		<Unit filename="/Users/guycohen/OneDrive - Technion/1 Courses/מבוא לתכנות מערכות/HW/HW1/Chess/chessSystem.c">
+			<Option target="Chess"/>
+		</Unit>
 		<Unit filename="/Users/guycohen/OneDrive - Technion/1 Courses/מבוא לתכנות מערכות/HW/HW1/Chess/chessSystem.h">
 			<Option target="Chess"/>
 		</Unit>
 		<Unit filename="/Users/guycohen/OneDrive - Technion/1 Courses/מבוא לתכנות מערכות/HW/HW1/Chess/libmap.a">
-			<Option target="Chess"/>
-		</Unit>
-		<Unit filename="/Users/guycohen/OneDrive - Technion/1 Courses/מבוא לתכנות מערכות/HW/HW1/Chess/main.c">
 			<Option target="Chess"/>
 		</Unit>
 		<Unit filename="/Users/guycohen/OneDrive - Technion/1 Courses/מבוא לתכנות מערכות/HW/HW1/Chess/CMakeLists.txt">

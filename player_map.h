@@ -3,7 +3,7 @@
 #include "map.h"
 
 typedef int PlayerId;
-typedef double PlayerLevel;
+typedef struct player_data* PlayerData;
 
 typedef enum {
     PLAYER_OUT_OF_MEMORY,
@@ -24,13 +24,20 @@ typedef enum {
     PLAYER_SUCCESS
 } PlayerResult ;
 
-
+struct player_data{
+    int num_of_games; // used to calculate averages when needed
+    int num_of_wins; // used to calculate Level
+    int num_of_loses; // used to calculate Level
+    int num_of_draws; // used to calculate Level
+    int total_play_time; // used to calculate average playtime
+};
 
 Map playerCreateMap();
 void playerDestroyMap(Map player_map);
 
-
-
+bool playerIdIsValid(PlayerId player_id);
+//can manipulate the data and update statistics
+PlayerData playerGetData(Map player_map, PlayerId player_id);
 
 
 

@@ -20,7 +20,7 @@ typedef enum {
     CHESS_NO_GAMES,
     CHESS_SAVE_FAILURE,
     CHESS_SUCCESS
-} ChessResult ;
+} TournamentResult ;
 
 typedef int TournamentId;
 typedef int PlayerId;

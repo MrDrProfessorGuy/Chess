@@ -27,6 +27,8 @@ typedef enum {
     DRAW
 } Winner;
 
+
+
 typedef int PlayerId;
 #define PLAYER_DELETED -1
 

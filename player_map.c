@@ -2,50 +2,89 @@
 #include <assert.h>
 #include <stdlib.h>
 
-typedef PlayerLevel* PlayerData;
 typedef PlayerId* PlayerKey;// Key = &player_id
 
 
 /******** player_Key functions ********/
-static PlayerKey createPlayerKey(PlayerId id);
+static MapKeyElement copyPlayerKey(MapKeyElement player_key);
+static MapDataElement copyPlayerData(MapDataElement data)
+static void freePlayerKey(MapKeyElement player_key);
+static void freePlayerData(MapDataElement data);
+static int comparePlayerKey(MapKeyElement player1_key, MapKeyElement player2_key);
 
-static void freePlayerKey(PlayerKey player_key);
-static PlayerKey copyPlayerKey(PlayerKey player_key);
-static int comparePlayerKey(PlayerKey player1_key, PlayerKey player2_key);
+
+static PlayerKey createPlayerKey(PlayerId id);
+static PlayerData createPlayerData();
 
 static bool playerKeyIsValid(PlayerKey player_key);
-static bool playerIdIsValid(PlayerId player_id);
-/******** chess_player_data functions ********/
-static PlayerData createPlayerData();
-static void freePlayerData(PlayerData data);
-static PlayerData copyPlayerData(PlayerData data);
+
 
 
 /******** player_Key functions ********/
-static void freePlayerKey(PlayerKey player_key){
-    free(player_key);
-}
-static PlayerKey copyPlayerKey(PlayerKey player_key){
+static MapKeyElement copyPlayerKey(MapKeyElement player_key){
     if (!playerKeyIsValid(player_key)){
         return NULL;
     }
-    PlayerKey key_copy = createPlayerKey(*player_key);//passed by value
+    PlayerKey key_copy = createPlayerKey(*(PlayerKey)player_key);//passed by value
     if (!key_copy){
         return NULL;
     }
     return key_copy;
 }
-static int comparePlayerKey(PlayerKey player1_key, PlayerKey player2_key){
-    return (*player1_key - *player2_key);
+static MapDataElement copyPlayerData(MapDataElement data){
+    if (!data){
+        return NULL;
+    }
+    PlayerData data_copy = createPlayerData();
+    if (!data_copy){
+        return NULL;
+    }
+    data_copy->num_of_games = ((PlayerData)data)->num_of_games;
+    data_copy->num_of_wins = ((PlayerData)data)->num_of_wins;
+    data_copy->num_of_loses = ((PlayerData)data)->num_of_loses;
+    data_copy->num_of_draws = ((PlayerData)data)->num_of_draws;
+    data_copy->total_play_time = ((PlayerData)data)->total_play_time;
+    return data_copy;
+}
+static void freePlayerKey(MapKeyElement player_key){
+    free(player_key);
+}
+static void freePlayerData(MapDataElement data){
+    free(data);
+}
+static int comparePlayerKey(MapKeyElement player1_key, MapKeyElement player2_key){
+    return (*(PlayerKey)player1_key - *(PlayerKey)player2_key);
 }
 
-bool playerKeyIsValid(PlayerKey player_key){
+
+static bool playerKeyIsValid(PlayerKey player_key){
     if (!player_key || *player_key <= 0){
         return false;
     }
     return true;
 }
+bool playerIdIsValid(PlayerId player_id){
+    if (player_id > 0){
+        return true;
+    }
+    return false;
+}
 
+/******** chess_player_data functions ********/
+static PlayerData createPlayerData(){
+    PlayerData player_data = malloc(sizeof(*player_data));
+    if (!player_data){
+        return NULL;
+    }
+    
+    player_data->num_of_games = 0;
+    player_data->num_of_wins = 0;
+    player_data->num_of_loses = 0;
+    player_data->num_of_draws = 0;
+    player_data->total_play_time = 0;
+    
+    return player_data;
+}
 static PlayerKey createPlayerKey(PlayerId id){
     if (!playerIdIsValid(id)){// can remove if checked everywhere else
         return NULL;
@@ -58,30 +97,6 @@ static PlayerKey createPlayerKey(PlayerId id){
     return player_id;
 }
 
-
-/******** chess_player_data functions ********/
-static PlayerData createPlayerData(){
-    PlayerData player_data = malloc(sizeof(*player_data));
-    if (!player_data){
-        return NULL;
-    }
-    *player_data = 0;
-    return player_data;
-}
-static void freePlayerData(PlayerData data){
-    free(data);
-}
-static PlayerData copyPlayerData(PlayerData data){
-    if (!data){
-        return NULL;
-    }
-    PlayerData data_copy = createChessPlayerData();
-    if (!data_copy){
-        return NULL;
-    }
-    data_copy->level = data->level;
-    return data_copy;
-}
 
 
 
