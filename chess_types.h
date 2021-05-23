@@ -3,23 +3,15 @@
 
 #include "chessSystem.h"
 #include "map.h"
-
 /**************************************************************/
 /********************* Type definitions *********************/
-typedef int PlayerId;
-typedef PlayerId* PlayerKey;// Key = &player_id
-typedef double PlayerLevel;
 
 typedef struct player_statistics* PlayerStatistics;
-typedef struct player_data* PlayerData;
 
-typedef struct game_id* GameId;
-typedef struct game_data* GameData;
 
-typedef int* TournamentId;// keys = 1,2,3,....
-typedef struct tournament_data* TournamentData;
 
-typedef const char* Location;
+
+
 
 struct player_statistics{
     int num_of_games; // used to calculate averages when needed

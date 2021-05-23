@@ -1,22 +1,36 @@
 #ifndef CHESS_PLAYER_MAP_H
 #define CHESS_PLAYER_MAP_H
+#include "map.h"
 
-#include "chess_types.h"
+typedef int PlayerId;
+typedef double PlayerLevel;
 
-/******** player_Id functions ********/
-static PlayerKey createPlayerKey(PlayerId id);
+typedef enum {
+    PLAYER_OUT_OF_MEMORY,
+    PLAYER_NULL_ARGUMENT,
+    PLAYER_INVALID_ID,
+    PLAYER_INVALID_LOCATION,
+    PLAYER_INVALID_MAX_GAMES,
+    PLAYER_TOURNAMENT_ALREADY_EXISTS,
+    PLAYER_TOURNAMENT_NOT_EXIST,
+    PLAYER_GAME_ALREADY_EXISTS,
+    PLAYER_INVALID_PLAY_TIME,
+    PLAYER_EXCEEDED_GAMES,
+    PLAYER_PLAYER_NOT_EXIST,
+    PLAYER_TOURNAMENT_ENDED,
+    PLAYER_NO_TOURNAMENTS_ENDED,
+    PLAYER_NO_GAMES,
+    PLAYER_SAVE_FAILURE,
+    PLAYER_SUCCESS
+} PlayerResult ;
 
-static void freePlayerKey(PlayerKey player_key);
-static PlayerKey copyPlayerKey(PlayerKey player_key);
-static int comparePlayerKey(PlayerKey player1_key, PlayerKey player2_key);
-
-static bool playerKeyIsValid(PlayerKey player_key);
 
 
-/******** chess_player_data functions ********/
-static PlayerData createChessPlayerData();
-static void freeChessPlayerData(PlayerData data);
-static PlayerData copyChessPlayerData(PlayerData data);
+Map playerCreateMap();
+void playerDestroyMap(Map player_map);
+
+
+
 
 
 

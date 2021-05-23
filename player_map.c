@@ -1,24 +1,27 @@
 #include "player_map.h"
 #include <assert.h>
 #include <stdlib.h>
-#include <stdbool.h>
 
-struct player_data{
-    PlayerLevel level;
-};
+typedef PlayerLevel* PlayerData;
+typedef PlayerId* PlayerKey;// Key = &player_id
 
-/******** player_Id functions ********/
-static PlayerKey createPlayerKey(PlayerId id){
-    if (!playerIdIsValid(id)){// can remove if checked everywhere else
-        return NULL;
-    }
-    PlayerKey player_id = malloc(sizeof(*player_id));
-    if (!player_id){
-        return NULL;
-    }
-    *player_id = id;
-    return player_id;
-}
+
+/******** player_Key functions ********/
+static PlayerKey createPlayerKey(PlayerId id);
+
+static void freePlayerKey(PlayerKey player_key);
+static PlayerKey copyPlayerKey(PlayerKey player_key);
+static int comparePlayerKey(PlayerKey player1_key, PlayerKey player2_key);
+
+static bool playerKeyIsValid(PlayerKey player_key);
+static bool playerIdIsValid(PlayerId player_id);
+/******** chess_player_data functions ********/
+static PlayerData createPlayerData();
+static void freePlayerData(PlayerData data);
+static PlayerData copyPlayerData(PlayerData data);
+
+
+/******** player_Key functions ********/
 static void freePlayerKey(PlayerKey player_key){
     free(player_key);
 }
@@ -43,21 +46,32 @@ bool playerKeyIsValid(PlayerKey player_key){
     return true;
 }
 
+static PlayerKey createPlayerKey(PlayerId id){
+    if (!playerIdIsValid(id)){// can remove if checked everywhere else
+        return NULL;
+    }
+    PlayerKey player_id = malloc(sizeof(*player_id));
+    if (!player_id){
+        return NULL;
+    }
+    *player_id = id;
+    return player_id;
+}
 
 
 /******** chess_player_data functions ********/
-static PlayerData createChessPlayerData(){
+static PlayerData createPlayerData(){
     PlayerData player_data = malloc(sizeof(*player_data));
     if (!player_data){
         return NULL;
     }
-    player_data->level = 0;
+    *player_data = 0;
     return player_data;
 }
-static void freeChessPlayerData(PlayerData data){
+static void freePlayerData(PlayerData data){
     free(data);
 }
-static PlayerData copyChessPlayerData(PlayerData data){
+static PlayerData copyPlayerData(PlayerData data){
     if (!data){
         return NULL;
     }

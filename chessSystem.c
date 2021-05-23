@@ -1,12 +1,14 @@
-#include "chess_types.h"
+#include "chessSystem.h"
+#include "game_map.h"
+#include "player_map.h"
+#include "tournament_map.h"
 #include <assert.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <stdio.h>
 
 /**
- *
- *               ################ Return Values ################
+ *   ################ Return Values ################
  *
  * CHESS_NULL_ARGUMENT
  * CHESS_INVALID_ID

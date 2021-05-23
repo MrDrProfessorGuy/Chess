@@ -1,26 +1,28 @@
 #include "game_map.h"
 #include <assert.h>
 #include <stdlib.h>
-#include <stdbool.h>
 
-/**
- *
- *               ################ Return Values ################
- *
- * CHESS_NULL_ARGUMENT
- * CHESS_INVALID_ID
- * CHESS_TOURNAMENT_NOT_EXIST
- * CHESS_TOURNAMENT_ENDED
- * CHESS_TOURNAMENT_ALREADY_EXISTS
- * CHESS_INVALID_LOCATION
- * CHESS_INVALID_MAX_GAMES
- * CHESS_INVALID_PLAY_TIME
- * CHESS_N0_GAMES
- * CHESS_PLAYER_NOT_EXIST
- * CHESS_EXCEEDED_GAMES
- * CHESS_SAVE_FAILURE
- * CHESS_SUCCESS
- */
+
+typedef struct game_id* GameId;
+typedef struct game_data* GameData;
+
+/***************************************************************/
+/********************* Game functions *********************/
+static void freeGameData(GameData data);
+static void freeGameId(GameId id);
+static GameData copyGameData(GameData data);
+static GameId copyGameId(GameId id);
+static int compareGameId(GameId id1, GameId id2);
+
+static GameId createGameId(PlayerId player1_id, PlayerId player2_id, GameResult* result);
+static GameData createGameData(int play_time, Winner winner, GameResult* result);
+
+
+static bool gameIdIsValid(GameId game_id);
+static bool validPlayTime(int play_time);
+static bool playerIdIsValid(PlayerId player_id);
+static void orderPlayerIds(PlayerId* id1, PlayerId* id2);
+
 
 
 struct game_id{
@@ -73,14 +75,14 @@ static char* playersIdToGameId(int player1_id, int player2_id){
 
 /***************************************************************/
 /********************* Game functions *********************/
-static void freeGameData(GameData data);
-static void freeGameId(GameId game_id){
+void freeGameData(GameData data);
+void freeGameId(GameId game_id){
     free(game_id);
 }
-static GameData copyGameData(GameData data){
+GameData copyGameData(GameData data){
     free(data);
 }
-static GameId copyGameId(GameId game_id){
+GameId copyGameId(GameId game_id){
     if (!game_id){
         return NULL;
     }
@@ -92,7 +94,7 @@ static GameId copyGameId(GameId game_id){
     id_copy->player2_id = game_id->player2_id;
     return id_copy;
 }
-static int compareGameId(GameId game1_id, GameId game2_id){
+int compareGameId(GameId game1_id, GameId game2_id){
     assert(game1_id && game2_id);
     
     if (game1_id->player1_id == game2_id->player1_id){
@@ -104,15 +106,15 @@ static int compareGameId(GameId game1_id, GameId game2_id){
     return (game1_id->player1_id - game2_id->player1_id);
 }
 
-static GameId createGameId(PlayerId player1_id, PlayerId player2_id, ChessResult* result){
-    *result = CHESS_SUCCESS;
+static GameId createGameId(PlayerId player1_id, PlayerId player2_id, GameResult* result){
+    *result = GAME_SUCCESS;
     if (!playerIdIsValid(player1_id) || !playerIdIsValid(player2_id)){
-        *result = CHESS_INVALID_ID;
+        *result = GAME_INVALID_ID;
         return NULL;
     }
     GameId game_id = malloc(sizeof(*game_id));
     if (!game_id){
-        *result = CHESS_OUT_OF_MEMORY;
+        *result = GAME_OUT_OF_MEMORY;
         return NULL;
     }
     
@@ -121,26 +123,28 @@ static GameId createGameId(PlayerId player1_id, PlayerId player2_id, ChessResult
     game_id->player2_id = player2_id;
     return game_id;
 }
-static GameData createGameData(int play_time, Winner winner, ChessResult* result){
-    *result = CHESS_SUCCESS;
+static GameData createGameData(int play_time, Winner winner, GameResult* result){
+    *result = GAME_SUCCESS;
     if (!validPlayTime(play_time)){
-        *result = CHESS_INVALID_PLAY_TIME;
+        *result = GAME_INVALID_PLAY_TIME;
         return NULL;
     }
     
     GameData game_data = malloc(sizeof(*game_data));
     if (!game_data){
-        *result = CHESS_OUT_OF_MEMORY;
+        *result = GAME_OUT_OF_MEMORY;
         return NULL;
     }
     game_data->play_time = play_time;
     game_data->winner = winner;
     return game_data;
 }
-static ChessResult addGame(Map game_map, int play_time, Winner winner,
-                           PlayerId player1_id, PlayerId player2_id){
+
+
+GameResult addGame(Map game_map, int play_time, Winner winner,
+                   PlayerId player1_id, PlayerId player2_id){
     if (!game_map){
-        return CHESS_NULL_ARGUMENT;
+        return GAME_NULL_ARGUMENT;
     }
 }
 
