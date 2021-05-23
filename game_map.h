@@ -19,11 +19,9 @@ static GameId createGameId(PlayerId player1_id, PlayerId player2_id, ChessResult
 static GameData createGameData(int play_time, Winner winner, ChessResult* result);
 static ChessResult addGame(Map game_map, int play_time, Winner winner,
                            PlayerId player1_id, PlayerId player2_id);
-static bool validPlayTime(int play_time);
 
-
-
-
+static bool gameIdIsValid(GameId game_id);
+static void orderPlayerIds(PlayerId* id1, PlayerId* id2);
 
 
 

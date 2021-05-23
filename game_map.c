@@ -68,17 +68,99 @@ static char* playersIdToGameId(int player1_id, int player2_id){
     
     return str;
 }
-static bool validPlayTime(int play_time){
-    if (play_time > 0){
-        return true;
+
+
+
+/***************************************************************/
+/********************* Game functions *********************/
+static void freeGameData(GameData data);
+static void freeGameId(GameId game_id){
+    free(game_id);
+}
+static GameData copyGameData(GameData data){
+    free(data);
+}
+static GameId copyGameId(GameId game_id){
+    if (!game_id){
+        return NULL;
     }
-    return false;
+    GameId id_copy = malloc(sizeof(*game_id));
+    if (!id_copy){
+        return NULL;
+    }
+    id_copy->player1_id = game_id->player1_id;
+    id_copy->player2_id = game_id->player2_id;
+    return id_copy;
+}
+static int compareGameId(GameId game1_id, GameId game2_id){
+    assert(game1_id && game2_id);
+    
+    if (game1_id->player1_id == game2_id->player1_id){
+        if (game1_id->player2_id == game2_id->player2_id){
+            return 0;
+        }
+        return (game1_id->player2_id - game2_id->player2_id);
+    }
+    return (game1_id->player1_id - game2_id->player1_id);
+}
+
+static GameId createGameId(PlayerId player1_id, PlayerId player2_id, ChessResult* result){
+    *result = CHESS_SUCCESS;
+    if (!playerIdIsValid(player1_id) || !playerIdIsValid(player2_id)){
+        *result = CHESS_INVALID_ID;
+        return NULL;
+    }
+    GameId game_id = malloc(sizeof(*game_id));
+    if (!game_id){
+        *result = CHESS_OUT_OF_MEMORY;
+        return NULL;
+    }
+    
+    //orderPlayerIds(&player1_id, &player2_id);
+    game_id->player1_id = player1_id;
+    game_id->player2_id = player2_id;
+    return game_id;
+}
+static GameData createGameData(int play_time, Winner winner, ChessResult* result){
+    *result = CHESS_SUCCESS;
+    if (!validPlayTime(play_time)){
+        *result = CHESS_INVALID_PLAY_TIME;
+        return NULL;
+    }
+    
+    GameData game_data = malloc(sizeof(*game_data));
+    if (!game_data){
+        *result = CHESS_OUT_OF_MEMORY;
+        return NULL;
+    }
+    game_data->play_time = play_time;
+    game_data->winner = winner;
+    return game_data;
+}
+static ChessResult addGame(Map game_map, int play_time, Winner winner,
+                           PlayerId player1_id, PlayerId player2_id){
+    if (!game_map){
+        return CHESS_NULL_ARGUMENT;
+    }
+}
+
+static bool gameIdIsValid(GameId game_id){
+    assert(game_id);
+    if (!playerIdIsValid(game_id->player1_id) || !playerIdIsValid(game_id->player2_id)){
+        return false;
+    }
+    
+    return true;
 }
 
 
-
-
-
+static void orderPlayerIds(PlayerId* id1, PlayerId* id2){
+    if (*id1 > *id2){
+        PlayerId tmp = *id1;
+        *id1 = *id2;
+        *id2 = tmp;
+    }
+}
 
 
 

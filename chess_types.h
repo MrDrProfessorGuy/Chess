@@ -6,13 +6,14 @@
 
 /**************************************************************/
 /********************* Type definitions *********************/
-typedef int* PlayerId;// Key = player_id
+typedef int PlayerId;
+typedef PlayerId* PlayerKey;// Key = &player_id
 typedef double PlayerLevel;
 
 typedef struct player_statistics* PlayerStatistics;
-typedef struct chess_player_data* ChessPlayerData;
+typedef struct player_data* PlayerData;
 
-typedef char* GameId; /// key = "player1_id"+ '#' +"player2_id"
+typedef struct game_id* GameId;
 typedef struct game_data* GameData;
 
 typedef int* TournamentId;// keys = 1,2,3,....
@@ -27,5 +28,17 @@ struct player_statistics{
     int num_of_draws; // used to calculate Level
     int total_play_time; // used to calculate average playtime
 };
+
+bool playerIdIsValid(PlayerId player1_id);
+bool validPlayTime(int play_time){
+    if (play_time > 0){
+        return true;
+    }
+    return false;
+}
+
+
+
+
 
 #endif //CHESS_CHESS_TYPES_H
