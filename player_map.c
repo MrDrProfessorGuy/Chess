@@ -7,7 +7,7 @@ typedef PlayerId* PlayerKey;// Key = &player_id
 
 /******** player_Key functions ********/
 static MapKeyElement copyPlayerKey(MapKeyElement player_key);
-static MapDataElement copyPlayerData(MapDataElement data)
+static MapDataElement copyPlayerData(MapDataElement data);
 static void freePlayerKey(MapKeyElement player_key);
 static void freePlayerData(MapDataElement data);
 static int comparePlayerKey(MapKeyElement player1_key, MapKeyElement player2_key);
@@ -99,9 +99,15 @@ static PlayerKey createPlayerKey(PlayerId id){
 
 
 
+Map playerCreateMap(){
+    return mapCreate(copyPlayerData, copyPlayerKey, freePlayerData,
+                     freePlayerKey, comparePlayerKey);
+}
 
 
-
+void playerDestroyMap(Map player_map){
+    mapDestroy(player_map);
+}
 
 
 

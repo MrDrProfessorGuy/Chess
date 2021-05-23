@@ -170,6 +170,87 @@ chessSystem.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Chess.dir/build.make CMakeFiles/Chess.dir/chessSystem.c.s
 .PHONY : chessSystem.c.s
 
+game_map.o: game_map.c.o
+
+.PHONY : game_map.o
+
+# target to build an object file
+game_map.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Chess.dir/build.make CMakeFiles/Chess.dir/game_map.c.o
+.PHONY : game_map.c.o
+
+game_map.i: game_map.c.i
+
+.PHONY : game_map.i
+
+# target to preprocess a source file
+game_map.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Chess.dir/build.make CMakeFiles/Chess.dir/game_map.c.i
+.PHONY : game_map.c.i
+
+game_map.s: game_map.c.s
+
+.PHONY : game_map.s
+
+# target to generate assembly for a file
+game_map.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Chess.dir/build.make CMakeFiles/Chess.dir/game_map.c.s
+.PHONY : game_map.c.s
+
+player_map.o: player_map.c.o
+
+.PHONY : player_map.o
+
+# target to build an object file
+player_map.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Chess.dir/build.make CMakeFiles/Chess.dir/player_map.c.o
+.PHONY : player_map.c.o
+
+player_map.i: player_map.c.i
+
+.PHONY : player_map.i
+
+# target to preprocess a source file
+player_map.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Chess.dir/build.make CMakeFiles/Chess.dir/player_map.c.i
+.PHONY : player_map.c.i
+
+player_map.s: player_map.c.s
+
+.PHONY : player_map.s
+
+# target to generate assembly for a file
+player_map.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Chess.dir/build.make CMakeFiles/Chess.dir/player_map.c.s
+.PHONY : player_map.c.s
+
+tournament_map.o: tournament_map.c.o
+
+.PHONY : tournament_map.o
+
+# target to build an object file
+tournament_map.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Chess.dir/build.make CMakeFiles/Chess.dir/tournament_map.c.o
+.PHONY : tournament_map.c.o
+
+tournament_map.i: tournament_map.c.i
+
+.PHONY : tournament_map.i
+
+# target to preprocess a source file
+tournament_map.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Chess.dir/build.make CMakeFiles/Chess.dir/tournament_map.c.i
+.PHONY : tournament_map.c.i
+
+tournament_map.s: tournament_map.c.s
+
+.PHONY : tournament_map.s
+
+# target to generate assembly for a file
+tournament_map.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Chess.dir/build.make CMakeFiles/Chess.dir/tournament_map.c.s
+.PHONY : tournament_map.c.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -182,6 +263,15 @@ help:
 	@echo "... chessSystem.o"
 	@echo "... chessSystem.i"
 	@echo "... chessSystem.s"
+	@echo "... game_map.o"
+	@echo "... game_map.i"
+	@echo "... game_map.s"
+	@echo "... player_map.o"
+	@echo "... player_map.i"
+	@echo "... player_map.s"
+	@echo "... tournament_map.o"
+	@echo "... tournament_map.i"
+	@echo "... tournament_map.s"
 .PHONY : help
 
 

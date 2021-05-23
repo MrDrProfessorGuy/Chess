@@ -3,28 +3,28 @@
 #include <stdlib.h>
 
 
-typedef struct game_id* GameId;
+typedef struct game_key* GameKey;
 typedef struct game_data* GameData;
 
 /***************************************************************/
 /********************* Game functions *********************/
-static void freeGameData(MapDataElement data);
-static void freeGameId(MapKeyElement id);
-static MapDataElement copyGameData(MapDataElement data);
-static MapKeyElement copyGameId(MapKeyElement id);
-static int compareGameId(MapKeyElement id1, MapKeyElement id2);
+static void freeGameData(MapDataElement game_data);
+static void freeGameKey(MapKeyElement game_key);
+static MapDataElement copyGameData(MapDataElement game_data);
+static MapKeyElement copyGameKey(MapKeyElement game_key);
+static int compareGameKey(MapKeyElement game1_key, MapKeyElement game2_key);
 
-static GameId createGameId(PlayerId player1_id, PlayerId player2_id, GameResult* result);
+static GameKey createGameKey(PlayerId player1_id, PlayerId player2_id, GameResult* result);
 static GameData createGameData(int play_time, Winner winner, GameResult* result);
 
 
-static bool gameIdIsValid(GameId game_id);
+static bool gameKeyIsValid(GameKey game_key);
 static bool validPlayTime(int play_time);
 static bool playerIdIsValid(PlayerId player_id);
 static void orderPlayerIds(PlayerId* id1, PlayerId* id2);
 
 
-struct game_id{
+struct game_key{
     PlayerId player1_id;
     PlayerId player2_id;
 };
@@ -33,7 +33,7 @@ struct game_data{
     int play_time;
     Winner winner;
 };
-
+/*
 static int countDigits(int num){
     int count = 0;
     do{
@@ -69,58 +69,72 @@ static char* playersIdToGameId(int player1_id, int player2_id){
     
     return str;
 }
-
+*/
 
 
 /***********************************************************/
 /********************* Game functions *********************/
-void freeGameData(GameData data);
-void freeGameId(GameId game_id){
-    free(game_id);
+static void freeGameData(MapDataElement game_data){
+    free(game_data);
 }
-GameData copyGameData(GameData data){
-    free(data);
+static void freeGameKey(MapKeyElement game_key){
+    free(game_key);
 }
-GameId copyGameId(GameId game_id){
-    if (!game_id){
+static MapDataElement copyGameData(MapDataElement game_data){
+    if (!game_data){
         return NULL;
     }
-    GameId id_copy = malloc(sizeof(*game_id));
-    if (!id_copy){
+    GameResult result;
+    GameData data_copy = createGameData(((GameData)game_data)->play_time,
+                                        ((GameData)game_data)->winner, &result);
+    if (!data_copy){
+        assert(result != GAME_SUCCESS);
         return NULL;
     }
-    id_copy->player1_id = game_id->player1_id;
-    id_copy->player2_id = game_id->player2_id;
-    return id_copy;
+    return game_data;
 }
-int compareGameId(GameId game1_id, GameId game2_id){
-    assert(game1_id && game2_id);
+static MapKeyElement copyGameKey(MapKeyElement game_key){
+    if (!game_key){
+        return NULL;
+    }
+    GameResult result;
+    GameKey key_copy = createGameKey(((GameKey)game_key)->player1_id,
+                                     ((GameKey)game_key)->player2_id, &result);
+    if (!key_copy){
+        assert(result != GAME_SUCCESS);
+        return NULL;
+    }
     
-    if (game1_id->player1_id == game2_id->player1_id){
-        if (game1_id->player2_id == game2_id->player2_id){
+    return key_copy;
+}
+static int compareGameKey(MapKeyElement game1_key, MapKeyElement game2_key){
+    assert(game1_key && game2_key);
+    
+    if (((GameKey)game1_key)->player1_id == ((GameKey)game2_key)->player1_id){
+        if (((GameKey)game1_key)->player2_id == ((GameKey)game2_key)->player2_id){
             return 0;
         }
-        return (game1_id->player2_id - game2_id->player2_id);
+        return (((GameKey)game1_key)->player2_id - ((GameKey)game2_key)->player2_id);
     }
-    return (game1_id->player1_id - game2_id->player1_id);
+    return (((GameKey)game1_key)->player1_id - ((GameKey)game2_key)->player1_id);
 }
 
-static GameId createGameId(PlayerId player1_id, PlayerId player2_id, GameResult* result){
+static GameKey createGameKey(PlayerId player1_id, PlayerId player2_id, GameResult* result){
     *result = GAME_SUCCESS;
     if (!playerIdIsValid(player1_id) || !playerIdIsValid(player2_id)){
         *result = GAME_INVALID_ID;
         return NULL;
     }
-    GameId game_id = malloc(sizeof(*game_id));
-    if (!game_id){
+    GameKey game_key = malloc(sizeof(*game_key));
+    if (!game_key){
         *result = GAME_OUT_OF_MEMORY;
         return NULL;
     }
     
-    //orderPlayerIds(&player1_id, &player2_id);
-    game_id->player1_id = player1_id;
-    game_id->player2_id = player2_id;
-    return game_id;
+    orderPlayerIds(&player1_id, &player2_id);
+    game_key->player1_id = player1_id;
+    game_key->player2_id = player2_id;
+    return game_key;
 }
 static GameData createGameData(int play_time, Winner winner, GameResult* result){
     *result = GAME_SUCCESS;
@@ -140,22 +154,27 @@ static GameData createGameData(int play_time, Winner winner, GameResult* result)
 }
 
 
-GameResult addGame(Map game_map, int play_time, Winner winner,
-                   PlayerId player1_id, PlayerId player2_id){
-    if (!game_map){
-        return GAME_NULL_ARGUMENT;
-    }
-}
-
-static bool gameIdIsValid(GameId game_id){
-    assert(game_id);
-    if (!playerIdIsValid(game_id->player1_id) || !playerIdIsValid(game_id->player2_id)){
+static bool gameKeyIsValid(GameKey game_key){
+    assert(game_key);
+    if (!playerIdIsValid(game_key->player1_id) || !playerIdIsValid(game_key->player2_id)){
         return false;
     }
+    assert(game_key->player1_id < game_key->player2_id);
     
     return true;
 }
-
+static bool validPlayTime(int play_time){
+    if (play_time >= 0){
+        return true;
+    }
+    return false;
+}
+static bool playerIdIsValid(PlayerId player_id){
+    if (player_id > 0){
+        return true;
+    }
+    return false;
+}
 
 static void orderPlayerIds(PlayerId* id1, PlayerId* id2){
     if (*id1 > *id2){
