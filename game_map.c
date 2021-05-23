@@ -19,9 +19,8 @@ static GameData createGameData(int play_time, Winner winner, GameResult* result)
 
 
 static bool gameKeyIsValid(GameKey game_key);
-static bool validPlayTime(int play_time);
 static bool playerIdIsValid(PlayerId player_id);
-static void orderPlayerIds(PlayerId* id1, PlayerId* id2);
+static bool reorderPlayers(PlayerId* id1, PlayerId* id2, Winner* winner);
 
 
 struct game_key{
@@ -131,14 +130,13 @@ static GameKey createGameKey(PlayerId player1_id, PlayerId player2_id, GameResul
         return NULL;
     }
     
-    orderPlayerIds(&player1_id, &player2_id);
     game_key->player1_id = player1_id;
     game_key->player2_id = player2_id;
     return game_key;
 }
 static GameData createGameData(int play_time, Winner winner, GameResult* result){
     *result = GAME_SUCCESS;
-    if (!validPlayTime(play_time)){
+    if (!playTimeIsValid(play_time)){
         *result = GAME_INVALID_PLAY_TIME;
         return NULL;
     }
@@ -163,7 +161,7 @@ static bool gameKeyIsValid(GameKey game_key){
     
     return true;
 }
-static bool validPlayTime(int play_time){
+bool playTimeIsValid(int play_time){
     if (play_time >= 0){
         return true;
     }
@@ -176,15 +174,63 @@ static bool playerIdIsValid(PlayerId player_id){
     return false;
 }
 
-static void orderPlayerIds(PlayerId* id1, PlayerId* id2){
+static bool reorderPlayers(PlayerId* id1, PlayerId* id2, Winner* winner){
     if (*id1 > *id2){
         PlayerId tmp = *id1;
         *id1 = *id2;
         *id2 = tmp;
+    
+        if (*winner == FIRST_PLAYER){
+            *winner = SECOND_PLAYER;
+        }
+        else if (*winner == SECOND_PLAYER){
+            *winner = FIRST_PLAYER;
+        }
+        return true;
     }
+    return false;
 }
 
 
+GameResult gameAdd(Map game_map, int play_time, Winner winner,
+                   PlayerId player1_id, PlayerId player2_id){
+    GameResult result = GAME_SUCCESS;
+    if (gameExists(game_map, player1_id, player2_id)){
+        return GAME_ALREADY_EXISTS;
+    }
+    if (!playTimeIsValid(play_time)){
+        return GAME_INVALID_PLAY_TIME;
+    }
+    
+    reorderPlayers(&player1_id, &player2_id, &winner);
+    GameKey game_key = createGameKey(player1_id, player2_id, &result);
+    if (result != GAME_SUCCESS){
+        return result;
+    }
+    GameData game_data = createGameData(play_time, winner, &result);
+    if (result != GAME_SUCCESS){
+        freeGameKey(game_key);
+        return result;
+    }
+    
+    if (mapPut(game_map, game_key, game_data) != MAP_SUCCESS){
+        freeGameKey(game_key);
+        freeGameData(game_data);
+        return GAME_OUT_OF_MEMORY;
+    }
+    assert(result == GAME_SUCCESS);
+    return result;
+}
 
-
+bool gameExists(Map game_map, PlayerId player1_id, PlayerId player2_id){
+    assert(game_map);
+    GameResult result;
+    GameKey game_key = createGameKey(player1_id, player2_id, *result);
+    if (mapContains(game_map, game_key)){
+        freeGameKey(game_key);
+        return true;
+    }
+    freeGameKey(game_key);
+    return false;
+}
 

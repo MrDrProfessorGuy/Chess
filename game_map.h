@@ -10,7 +10,7 @@ typedef enum {// make sure no changes need to be done to this result enum
     GAME_INVALID_MAX_GAMES,
     GAME_TOURNAMENT_ALREADY_EXISTS,
     GAME_TOURNAMENT_NOT_EXIST,
-    GAME_GAME_ALREADY_EXISTS,
+    GAME_ALREADY_EXISTS,
     GAME_INVALID_PLAY_TIME,
     GAME_EXCEEDED_GAMES,
     GAME_PLAYER_NOT_EXIST,
@@ -37,9 +37,9 @@ GameResult gameAdd(Map game_map, int play_time, Winner winner,
 int gameGetLongestPlayTime(); // printed in tournament statistics
 int gameGetTotalPlayTime(); // used for tournament statistics
 GameResult gameRemovePlayer();
+bool gameExists(Map game_map, PlayerId player1_id, PlayerId player2_id);
 
 
-
-
+bool playTimeIsValid(int play_time);
 
 #endif //CHESS_GAME_MAP_H

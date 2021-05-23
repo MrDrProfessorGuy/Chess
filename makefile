@@ -1,41 +1,21 @@
-gcc -std=c99 -o chessSystem -Wall -pedantic-errors -Werror -DNDEBUG *.c
-    ./tests/chessSystemTestsExample.c -L. –lmap
-
-output: chess.o
-
-
-clean:
-    rm *.o output
-
-
-
-
 
 CC = gcc
-OBJS1 = event_manager.o priority_queue.o date.o event.o member.o event_manager_example_tests.o
-OBJS2 = priority_queue.o  pq_example_tests.o
 EXEC1 = chess
+OBJS1 = chess.o
+
+
 DEBUG_FLAG = -g  -DNDEBUG
-COMP_FLAG = -std=c99 -Wall -Werror
+COMP_FLAG = -std=c99 -pedantic-errors
 
 $(EXEC1) : $(OBJS1)
-	$(CC) $(DEBUG_FLAG) $(OBJS) -o $@
-$(EXEC2) : $(OBJS2)
-	$(CC) $(DEBUG_FLAG) $(OBJS) -o $@
+	$(CC) $(DEBUG_FLAG) $(OBJS1) -o $@
 
-event_manager.o: event_manager.c priority_queue.h event_manager.h date.h \
- member.h event.h
-	$(CC) -c $(DEBUG_FLAG) $(COMP_FLAG) $*.c
-priority_queue.o : priority_queue.c priority_queue.h
-	$(CC) -c $(DEBUG_FLAG) $(COMP_FLAG) $*.c
-date.o : date.c date.h
-	$(CC) -c $(DEBUG_FLAG) $(COMP_FLAG) $*.c
-event.o : event.c event.h date.h member.h priority_queue.h
-	$(CC) -c $(DEBUG_FLAG) $(COMP_FLAG) $*.c
-member.o : member.c member.h
-	$(CC) -c $(DEBUG_FLAG) $(COMP_FLAG) $*.c
+chess.o : game_map.c game_map.h player_map.c player_map.h tournament_map.c tournament_map.h\
+map.h libmap.a chessSystem.c chessSystem.h
+	$(CC) -c $(DEBUG_FLAG) $(COMP_FLAG) $*.c ./tests/chessSystemTestsExample.c
+
 clean:
-	rm -f $(OBJS) $(EXEC)s
+	rm -f $(OBJS1) $(EXEC)
 
 
 

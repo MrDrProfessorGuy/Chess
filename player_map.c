@@ -103,11 +103,51 @@ Map playerCreateMap(){
     return mapCreate(copyPlayerData, copyPlayerKey, freePlayerData,
                      freePlayerKey, comparePlayerKey);
 }
-
-
 void playerDestroyMap(Map player_map){
     mapDestroy(player_map);
 }
+
+
+bool playerExceededGames(Map player_map, PlayerId player_id, int num_of_games){
+    assert(player_map);
+    PlayerData player_data = mapGet(player_map, &player_id);
+    assert(player_data);
+    if (player_data->num_of_games < num_of_games){
+        return false;
+    }
+    return true;
+}
+
+PlayerResult playerAdd(Map player_map, PlayerId player_id){
+    assert(player_map);
+    PlayerKey player_key = createPlayerKey(player_id);
+    if (!player_key){
+        return PLAYER_OUT_OF_MEMORY;
+    }
+    PlayerData player_data = createPlayerData();
+    if (!player_data){
+        freePlayerKey(player_key);
+        return PLAYER_OUT_OF_MEMORY;
+    }
+    
+    if (mapPut(player_map, player_key, player_data) != MAP_SUCCESS){
+        freePlayerKey(player_key);
+        freePlayerData(player_data);
+        return PLAYER_OUT_OF_MEMORY;
+    }
+    
+    return PLAYER_SUCCESS;
+}
+
+PlayerResult playerRemove(Map player_map, PlayerId player_id){
+    assert(player_map);
+    if (mapContains(player_map, &player_id)){
+        mapRemove(player_map, &player_id);
+        return PLAYER_SUCCESS;
+    }
+    return PLAYER_NOT_EXIST
+}
+
 
 
 

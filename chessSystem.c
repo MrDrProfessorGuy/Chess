@@ -41,6 +41,13 @@
 /********************* Public Functions *********************/
 /***********************************************************/
 
+struct chess_system_t{
+    Map tournament_map;
+    Map player_map;
+};
+
+
+
 /**
  * chessCreate: create an empty chess system.
  *
@@ -110,7 +117,43 @@ ChessResult chessAddTournament (ChessSystem chess, int tournament_id,
  */
 /// todo
 ChessResult chessAddGame(ChessSystem chess, int tournament_id, int first_player,
-                         int second_player, Winner winner, int play_time);
+                         int second_player, Winner winner, int play_time){
+    
+    if (!chess){
+        return CHESS_NULL_ARGUMENT;
+    }
+    if (!tournamentIdIsValid(tournament_id) || !playerIdIsValid(first_player) ||
+        !playerIdIsValid(second_player) || first_player == second_player){
+        return CHESS_INVALID_ID;
+    }
+    Map tournament_map = chess->tournament_map;
+    assert(tournament_map);
+    if(!tournamentContains(tournament_map, tournament_id)){
+        return CHESS_TOURNAMENT_NOT_EXIST;
+    }
+    if (tournamentEnded(tournament_map, tournament_id)){
+        return CHESS_TOURNAMENT_ENDED;
+    }
+    Map tournament_game_map = tournamentGetGameMap(chess->tournament_map, tournament_id);
+    assert(tournament_game_map);
+    GameResult result = gameAdd(tournament_game_map, play_time, winner, first_player, second_player);
+    if (result != GAME_SUCCESS){
+        return (ChessResult)result;
+    }
+    
+    Map tournament_player_map = tournamentGetPlayerMap(tournament_map, tournament_id);
+    assert(tournament_player_map);
+    int max_games = tournamentGetMaxGames(tournament_map, tournament_id);
+    if (playerExceededGames(tournament_player_map, first_player, max_games) ||
+        playerExceededGames(tournament_player_map, second_player, max_games)){
+        return CHESS_EXCEEDED_GAMES;
+    }
+    
+    
+    
+}
+
+
 
 /**
  * chessRemoveTournament: removes the tournament and all the games played in it from the chess system

@@ -28,24 +28,20 @@ typedef const char* Location;
 
 
 
+
 /// assign specific functions to map create
-Map tournamentCreate(...);
+Map tournamentCreate();
 void tournamentDestroy(Map tournament);
 Map tournamentCopy(Map tournament);
 
-bool tournamentEnded(TournamentId tournament_id);
-int tournamentGetMaxGames(TournamentId tournament_id);
-PlayerId tournamentGetWinnerId(TournamentId tournament_id);
-Location tournamentGetLocation(TournamentId tournament_id);
-
-
-
-
-
-
-
-
-
+bool tournamentEnded(Map tournament_map, TournamentId tournament_id);
+int tournamentGetMaxGames(Map tournament_map, TournamentId tournament_id);
+PlayerId tournamentGetWinnerId(Map tournament_map, TournamentId tournament_id);
+Location tournamentGetLocation(Map tournament_map, TournamentId tournament_id);
+bool tournamentContains(Map tournament_map, TournamentId tournament_id);
+Map tournamentGetPlayerMap(Map tournament_map, TournamentId tournament_id);
+Map tournamentGetGameMap(Map tournament_map, TournamentId tournament_id);
+bool tournamentIdIsValid(TournamentId id);
 
 
 

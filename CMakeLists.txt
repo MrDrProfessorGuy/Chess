@@ -10,4 +10,5 @@ add_executable(Chess
         game_map.c
         player_map.c
         tournament_map.c
+        tests/chessSystemTestsExample.c
         libmap.a)

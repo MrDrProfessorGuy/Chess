@@ -16,7 +16,7 @@ typedef enum {
     PLAYER_GAME_ALREADY_EXISTS,
     PLAYER_INVALID_PLAY_TIME,
     PLAYER_EXCEEDED_GAMES,
-    PLAYER_PLAYER_NOT_EXIST,
+    PLAYER_NOT_EXIST,
     PLAYER_TOURNAMENT_ENDED,
     PLAYER_NO_TOURNAMENTS_ENDED,
     PLAYER_NO_GAMES,
@@ -35,11 +35,14 @@ struct player_data{
 Map playerCreateMap();
 void playerDestroyMap(Map player_map);
 
+bool playerExists(Map player_map, PlayerId player_id);
+
 bool playerIdIsValid(PlayerId player_id);
 //can manipulate the data and update statistics
 PlayerData playerGetData(Map player_map, PlayerId player_id);
-
-
+bool playerExceededGames(Map player_map, PlayerId player_id, int num_of_games);
+PlayerResult playerAdd(Map player_map, PlayerId player_id);
+PlayerResult playerRemove(Map player_map, PlayerId player_id);
 
 
 #endif //CHESS_PLAYER_MAP_H

@@ -224,6 +224,33 @@ player_map.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Chess.dir/build.make CMakeFiles/Chess.dir/player_map.c.s
 .PHONY : player_map.c.s
 
+tests/chessSystemTestsExample.o: tests/chessSystemTestsExample.c.o
+
+.PHONY : tests/chessSystemTestsExample.o
+
+# target to build an object file
+tests/chessSystemTestsExample.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Chess.dir/build.make CMakeFiles/Chess.dir/tests/chessSystemTestsExample.c.o
+.PHONY : tests/chessSystemTestsExample.c.o
+
+tests/chessSystemTestsExample.i: tests/chessSystemTestsExample.c.i
+
+.PHONY : tests/chessSystemTestsExample.i
+
+# target to preprocess a source file
+tests/chessSystemTestsExample.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Chess.dir/build.make CMakeFiles/Chess.dir/tests/chessSystemTestsExample.c.i
+.PHONY : tests/chessSystemTestsExample.c.i
+
+tests/chessSystemTestsExample.s: tests/chessSystemTestsExample.c.s
+
+.PHONY : tests/chessSystemTestsExample.s
+
+# target to generate assembly for a file
+tests/chessSystemTestsExample.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Chess.dir/build.make CMakeFiles/Chess.dir/tests/chessSystemTestsExample.c.s
+.PHONY : tests/chessSystemTestsExample.c.s
+
 tournament_map.o: tournament_map.c.o
 
 .PHONY : tournament_map.o
@@ -269,6 +296,9 @@ help:
 	@echo "... player_map.o"
 	@echo "... player_map.i"
 	@echo "... player_map.s"
+	@echo "... tests/chessSystemTestsExample.o"
+	@echo "... tests/chessSystemTestsExample.i"
+	@echo "... tests/chessSystemTestsExample.s"
 	@echo "... tournament_map.o"
 	@echo "... tournament_map.i"
 	@echo "... tournament_map.s"

@@ -8,7 +8,13 @@
 typedef TournamentId* TournamentKey;
 typedef struct tournament_data* TournamentData;
 
-
+struct tournament_data{
+    Location location;
+    int max_games_per_player;
+    bool has_ended;
+    Map game_map;
+    PlayerId winner_id;
+};
 
 
 /***************************************************************/
@@ -21,20 +27,11 @@ static int compareTournamentKey(TournamentKey id1, TournamentKey id2);
 
 static TournamentKey createTournamentKey();
 static TournamentData createTournamentData();
-static bool tournamentIdIsValid(TournamentId id);
-
-
-struct tournament_data{
-    Location location;
-    int max_games_per_player;
-    bool has_ended;
-    Map game_map;
-    PlayerId winner_id;
-};
 
 
 
-static bool tournamentIdIsValid(TournamentId id){
+
+bool tournamentIdIsValid(TournamentId id){
     if (id > 0){
         return true;
     }
