@@ -4,15 +4,6 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-
-/**
- *
- *              ################ NOTE! ################
- * the new update says that max_games_per_player is per tournament and not
- * counted by the total games a player has played, therefor I moved the player map
- * to the Tournament Data (from the main Chess_System Struct)
- */
- 
 /**
  *
  *               ################ Return Values ################
@@ -33,10 +24,6 @@
  */
 
 
-
-
-
-
 #define PLAYER_SEPARATOR '#'
 
 /**************************************************************/
@@ -54,30 +41,80 @@ typedef struct tournament_data* TournamentData;
 
 typedef const char* Location;
 
+
 /***************************************************************/
 /********************* Helper Functions *********************/
+/***************************************************************/
+
 static char* playersIdToGameId(int player1_id, int player2_id);
 static int countDigits(int num);
 
 /********************* Player functions *********************/
-static PlayerId createPlayerId(int player1_id);
+static ChessResult chessSystemAddPlayer(Map player_map, PlayerId player_id);
+
+/******** player_Id functions ********/
+static PlayerId createPlayerId(int id);
 static void freePlayerId(PlayerId id);
 static PlayerId copyPlayerId(PlayerId id);
 static int comparePlayerId(PlayerId id1, PlayerId id2);
 static bool playerIdIsValid(PlayerId id);
 
+/******** tournament_player_data functions ********/
 static void freeTournamentPlayerData(TournamentPlayerData data);
 static TournamentPlayerData copyTournamentPlayerData(TournamentPlayerData data);
 static TournamentPlayerData createTournamentPlayerData();
 
+/******** chess_player_data functions ********/
 static void freeChessPlayerData(ChessPlayerData data);
 static ChessPlayerData copyChessPlayerData(ChessPlayerData data);
 static ChessPlayerData createChessPlayerData();
 
+/******** player_map functions ********/
+/**
+ * Function: playerMapAddPlayer
+ * add a new player to the player map, if the player exists nothing happens.
+ *
+ * @param player_map: pointer to the player map (in the Chess-System struct)
+ * @param player_id: pointer to player id to be added
+ *
+ * @return ChessResult
+ */
+static ChessResult playerMapAddPlayer(Map player_map, PlayerId player_id);
+/**
+ * Function: playerMapRemovePlayer
+ * remove a player from the player map.
+ *
+ * @param player_map: pointer to the player map (in the Chess-System struct)
+ * @param player_id: pointer to player id to be added
+ *
+ * @return ChessResult
+ */
+static ChessResult playerMapRemovePlayer(Map player_map, PlayerId player_id);
 
-static ChessResult addPlayer(Map player_map, PlayerId player_id);
+/******** player_statistics_map functions ********/
+/**
+ * Function: playerStatisticsMapAddPlayer
+ * add a new player(statistics) to the player_Statistics_map, if the player exists nothing happens.
+ *
+ * @param player_statistics_map: pointer to the player map (in the Chess-System struct)
+ * @param player_id: pointer to player id to be added
+ *
+ * @return ChessResult
+ */
+static ChessResult playerStatisticsMapAddPlayer(Map player_statistics_map, PlayerId player_id);
+/**
+ * Function: playerStatisticsMapRemovePlayer
+ * remove a player from the player_statistics_map.
+ *
+ * @param player_statistics_map: pointer to the player map (in the Chess-System struct)
+ * @param player_id: pointer to player id to be added
+ *
+ * @return ChessResult
+ */
+static ChessResult playerStatisticsMapRemovePlayer(Map player_statistics_map, PlayerId player_id);
 
 
+/***************************************************************/
 /********************* Tournament functions *********************/
 static void freeTournamentData(TournamentData data);
 static void freTournamentId(TournamentId id);
@@ -89,12 +126,13 @@ static TournamentId createTournamentId();
 static TournamentData createTournamentData();
 static bool tournamentIdIsValid(TournamentId id);
 
+/***************************************************************/
 /********************* Game functions *********************/
-static void gameFreeData(GameData data);
-static void gameFreeId(GameId id);
-static GameData gameCopyData(GameData data);
-static GameId gameCopyId(GameId id);
-static int gameCompareId(GameId id1, GameId id2);
+static void freeGameData(GameData data);
+static void freeGameId(GameId id);
+static GameData copyGameData(GameData data);
+static GameId copyGameId(GameId id);
+static int compareGameId(GameId id1, GameId id2);
 
 static GameId createGameId(PlayerId player1_id, PlayerId player2_id, ChessResult* result);
 static GameData createGameData(int play_time, Winner winner, ChessResult* result);
@@ -109,14 +147,6 @@ struct chess_system_t{
     Map player_map;
 };
 
-struct tournament_player_data{
-    int num_of_games; // used to calculate averages when needed
-    int num_of_wins; // used to calculate Level
-    int num_of_loses; // used to calculate Level
-    int num_of_draws; // used to calculate Level
-    int total_play_time; // used to calculate average playtime
-};
-
 struct chess_player_data{
     PlayerLevel level;
 };
@@ -126,10 +156,18 @@ struct tournament_data{
     int max_games_per_player;
     bool has_ended;
     Map game_map;
-    Map player_statistics;
+    Map player_statistics_map;
     int longest_game_time; // printed in tournament statistics
     int total_game_time; // used for tournament statistics
     PlayerId winner;
+};
+
+struct tournament_player_data{
+    int num_of_games; // used to calculate averages when needed
+    int num_of_wins; // used to calculate Level
+    int num_of_loses; // used to calculate Level
+    int num_of_draws; // used to calculate Level
+    int total_play_time; // used to calculate average playtime
 };
 
 struct game_data{
@@ -141,14 +179,8 @@ struct game_data{
 
 /*************************************************************/
 /********************* Static Functions *********************/
+/***************************************************************/
 
-/**
- * count_digits:
- *
- * @param
- *
- * @return
- */
 static int countDigits(int num){
     int count = 0;
     do{
@@ -157,13 +189,6 @@ static int countDigits(int num){
     }while (num != 0);
     return count;
 }
-/**
- * id_to_str:
- *
- * @param
- *
- * @return
- */
 static char* playersIdToGameId(int player1_id, int player2_id){
     int player1_digits = countDigits(player1_id);
     int player2_digits = countDigits(player2_id);
@@ -192,37 +217,65 @@ static char* playersIdToGameId(int player1_id, int player2_id){
     return str;
 }
 
-
 /********************* Player functions *********************/
-static PlayerId createPlayerId(int player1_id){
-    PlayerId id = malloc(sizeof(int));
-    if (!id){
+static ChessResult chessSystemAddPlayer(ChessSystem chess_system, TournamentId tournament_id,
+                                        PlayerId player_id){
+    if (!chess_system || !tournament_id){
+        return CHESS_NULL_ARGUMENT;
+    }
+    if (!playerIdIsValid(player_id)){
+        return CHESS_INVALID_ID;
+    }
+    TournamentData tournament_data = mapGet(chess_system->tournament_map, tournament_data);
+    if (!tournament_data){
+        return CHESS_TOURNAMENT_NOT_EXIST;
+    }
+    if (tournament_data->has_ended){
+        return CHESS_TOURNAMENT_ENDED;
+    }
+    
+    ChessResult result = playerMapAddPlayer();
+    
+    
+    return CHESS_SUCCESS;
+}
+
+/******** player_Id functions ********/
+static PlayerId createPlayerId(int id){
+    if (!playerIdIsValid(&id)){// can remove if checked everywhere else
         return NULL;
     }
-    *id = player1_id;
-    return id;
+    PlayerId player_id = malloc(sizeof(*player_id));
+    if (!player_id){
+        return NULL;
+    }
+    *player_id = id;
+    return player_id;
 }
 static void freePlayerId(PlayerId id){
     free(id);
 }
-static int comparePlayerId(PlayerId id1, PlayerId id2){
-    return (*id1 - *id2);
-}
 static PlayerId copyPlayerId(PlayerId id){
-    PlayerId id_copy = createPlayerId(*id);
+    if (!playerIdIsValid(id)){
+        return NULL;
+    }
+    PlayerId id_copy = createPlayerId(*id);//passed by value
     if (!id_copy){
         return NULL;
     }
     return id_copy;
 }
+static int comparePlayerId(PlayerId id1, PlayerId id2){
+    return (*id1 - *id2);
+}
 static bool playerIdIsValid(PlayerId id){
     if (!id || *id <= 0){
         return false;
     }
-    
     return true;
 }
 
+/******** tournament_player_data functions ********/
 static TournamentPlayerData createTournamentPlayerData(){
     TournamentPlayerData data = malloc(sizeof(*data));
     if (!data){
@@ -253,6 +306,7 @@ static TournamentPlayerData copyTournamentPlayerData(TournamentPlayerData data){
     return data_copy;
 }
 
+/******** chess_player_data functions ********/
 static ChessPlayerData createChessPlayerData(){
     ChessPlayerData chess_player_data = malloc(sizeof(*chess_player_data));
     if (!chess_player_data){
@@ -276,31 +330,83 @@ static ChessPlayerData copyChessPlayerData(ChessPlayerData data){
     return data_copy;
 }
 
-
-static ChessResult addPlayer(Map player_map, PlayerId player_id){
+/******** player_map functions ********/
+static ChessResult playerMapAddPlayer(Map player_map, PlayerId player_id){
     if (!player_map){
         return CHESS_NULL_ARGUMENT;
     }
     if (!playerIdIsValid(player_id)){
         return CHESS_INVALID_ID;
     }
-    PlayerId id = createPlayerId(*player_id);
-    if (!id){
-        return CHESS_OUT_OF_MEMORY;
-    }
-    TournamentPlayerData data = createTournamentPlayerData();
-    if (!data){
-        freePlayerId(id);
-        return CHESS_OUT_OF_MEMORY;
+    
+    if (!mapContains(player_map, player_id)){
+        ChessPlayerData chess_player_data = createChessPlayerData();
+        if (!chess_player_data){
+            return CHESS_OUT_OF_MEMORY;
+        }
+        if (mapPut(player_map, player_id, chess_player_data) != MAP_SUCCESS){
+            return CHESS_OUT_OF_MEMORY;
+        }
     }
     
-    if (mapPut(player_map, id, data) != MAP_SUCCESS){
-        freePlayerId(id);
-        freeTournamentPlayerData(data);
-        return CHESS_OUT_OF_MEMORY;
+    return CHESS_SUCCESS;
+}
+static ChessResult playerMapRemovePlayer(Map player_map, PlayerId player_id){
+    if (!player_map){
+        return CHESS_NULL_ARGUMENT;
+    }
+    if (!playerIdIsValid(player_id)){
+        return CHESS_INVALID_ID;
+    }
+    if (mapRemove(player_map, player_id) != MAP_SUCCESS){// already uses the free functions given at creation
+        return CHESS_PLAYER_NOT_EXIST;
     }
     return CHESS_SUCCESS;
 }
+static ChessResult playerMapUpdatePlayer(Map player_map, PlayerId player_id){
+
+}
+
+/******** player_statistics_map functions ********/
+static ChessResult playerStatisticsMapAddPlayer(Map player_statistics_map, PlayerId player_id){
+    if (!player_statistics_map){
+        return CHESS_NULL_ARGUMENT;
+    }
+    if (!playerIdIsValid(player_id)){
+        return CHESS_INVALID_ID;
+    }
+    
+    if (!mapContains(player_statistics_map, player_id)){
+        TournamentPlayerData tournament_player_data = createTournamentPlayerData();
+        if (!tournament_player_data){
+            return CHESS_OUT_OF_MEMORY;
+        }
+        if (mapPut(player_statistics_map, player_id, tournament_player_data) != MAP_SUCCESS){
+            return CHESS_OUT_OF_MEMORY;
+        }
+    }
+    
+    return CHESS_SUCCESS;
+}
+static ChessResult playerStatisticsMapRemovePlayer(Map player_statistics_map, PlayerId player_id){
+    if (!player_statistics_map){
+        return CHESS_NULL_ARGUMENT;
+    }
+    if (!playerIdIsValid(player_id)){
+        return CHESS_INVALID_ID;
+    }
+    
+    if (mapRemove(player_statistics_map, player_id) != MAP_SUCCESS){// already uses the free functions given at creation
+        return CHESS_PLAYER_NOT_EXIST;
+    }
+    return CHESS_SUCCESS;
+    
+}
+static ChessResult playerStatisticsMapUpdate(Map player_statistics_map, PlayerId player_id){
+
+
+}
+
 
 /********************* Tournament functions *********************/
 
@@ -347,12 +453,12 @@ static ChessResult addGame(Map game_map, int play_time, Winner winner,
     GameId game_id = createGameId(player1_id, player2_id, &result);
     if (!game_id){
         assert(result != CHESS_SUCCESS);
-        gameFreeData(game_data);
+        freeGameData(game_data);
         return result;
     }
     if (mapPut(game_map, game_id, game_data) != MAP_SUCCESS){
-        gameFreeData(game_data);
-        gameFreeId(game_id);
+        freeGameData(game_data);
+        freeGameId(game_id);
         return CHESS_OUT_OF_MEMORY;
     }
     return CHESS_SUCCESS;
@@ -382,7 +488,7 @@ static bool gameExists(Map game_map, PlayerId player_id1, PlayerId player_id2){
     if (mapContains(game_map, game_id)){
         result = true;
     }
-    gameFreeId(game_id);
+    freeGameId(game_id);
     return result;
 }
 static bool gameExists_2(Map game_map, PlayerId player1_id, PlayerId player2_id){
@@ -546,11 +652,11 @@ ChessResult chessAddGame(ChessSystem chess, int tournament_id, int first_player,
     assert(player_map); // player map should be valid
     
     TournamentPlayerData player1 = mapGet(player_map, &first_player);
-    if (player1 == NULL && addPlayer(player_map, &first_player) != CHESS_SUCCESS){// player doesn't exist ==> add him to the map
+    if (player1 == NULL && chessSystemAddPlayer(player_map, &first_player) != CHESS_SUCCESS){// player doesn't exist ==> add him to the map
         return CHESS_OUT_OF_MEMORY;
     }
     TournamentPlayerData player2 = mapGet(player_map, &second_player);
-    if (player2 == NULL && addPlayer(player_map, &second_player) != CHESS_SUCCESS){// player doesn't exist ==> add him to the map
+    if (player2 == NULL && chessSystemAddPlayer(player_map, &second_player) != CHESS_SUCCESS){// player doesn't exist ==> add him to the map
         return CHESS_OUT_OF_MEMORY;
     }
     
