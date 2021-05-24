@@ -30,13 +30,10 @@ typedef enum {
 
 
 typedef int PlayerId;
-#define PLAYER_DELETED -1
 
 
-int gameGetLongestPlayTime(); // printed in tournament statistics
-int gameGetTotalPlayTime(); // used for tournament statistics
-GameResult gameRemovePlayer();
 bool gameExists(Map game_map, PlayerId player1_id, PlayerId player2_id);
+bool playTimeIsValid(int play_time);
 
 /**
  * gameAdd: add a game to the given game map
@@ -66,7 +63,28 @@ GameResult gameAdd(Map game_map, int play_time, Winner winner,
  *      GAME_SUCCESS - otherwise
  */
 GameResult gameRemove(Map game_map, PlayerId player1_id, PlayerId player2_id);
+/**
+ * gameRemovePlayerParticipated:
+ *      remove all games a player participates in
+ *
+ * @param game_map
+ * @param player_id
+ * @return
+ *      GAME_OUT_OF_MEMORY - if an allocation failed
+ */
+GameResult gameRemovePlayerParticipated(Map game_map, PlayerId player_id);
 
-bool playTimeIsValid(int play_time);
+
+
+
+
+
+
+
+
+
+
+
+
 
 #endif //CHESS_GAME_MAP_H

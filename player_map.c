@@ -5,7 +5,7 @@
 typedef PlayerId* PlayerKey;// Key = &player_id
 
 
-/******** player_Key functions ********/
+/********************* static functions *********************/
 static MapKeyElement copyPlayerKey(MapKeyElement player_key);
 static MapDataElement copyPlayerData(MapDataElement data);
 static void freePlayerKey(MapKeyElement player_key);
@@ -20,7 +20,10 @@ static bool playerKeyIsValid(PlayerKey player_key);
 
 
 
-/******** player_Key functions ********/
+/********************************************************************/
+/********************* Function Implementation *********************/
+/******************************************************************/
+
 static MapKeyElement copyPlayerKey(MapKeyElement player_key){
     if (!playerKeyIsValid(player_key)){
         return NULL;
@@ -57,20 +60,6 @@ static int comparePlayerKey(MapKeyElement player1_key, MapKeyElement player2_key
 }
 
 
-static bool playerKeyIsValid(PlayerKey player_key){
-    if (!player_key || *player_key <= 0){
-        return false;
-    }
-    return true;
-}
-bool playerIdIsValid(PlayerId player_id){
-    if (player_id > 0){
-        return true;
-    }
-    return false;
-}
-
-/******** chess_player_data functions ********/
 static PlayerData createPlayerData(){
     PlayerData player_data = malloc(sizeof(*player_data));
     if (!player_data){
@@ -96,7 +85,30 @@ static PlayerKey createPlayerKey(PlayerId id){
     *player_id = id;
     return player_id;
 }
+static bool playerKeyIsValid(PlayerKey player_key){
+    if (!player_key || *player_key <= 0){
+        return false;
+    }
+    return true;
+}
 
+
+
+
+
+bool playerIdIsValid(PlayerId player_id){
+    if (player_id > 0){
+        return true;
+    }
+    return false;
+}
+bool playerExists(Map player_map, PlayerId player_id){
+    assert(player_map);
+    if (mapContains(player_map, &player_id)){
+        return true;
+    }
+    return false;
+}
 
 
 Map playerCreateMap(){
@@ -152,6 +164,7 @@ PlayerData playerGetData(Map player_map, PlayerId player_id){
     
     return mapGet(player_map, &player_id);
 }
+
 
 
 

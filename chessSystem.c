@@ -255,8 +255,19 @@ ChessResult chessRemoveTournament (ChessSystem chess, int tournament_id);
  */
 /// todo
 ChessResult chessRemovePlayer(ChessSystem chess, int player_id){
+    if (!chess){
+        return CHESS_NULL_ARGUMENT;
+    }
+    if (!playerIdIsValid(player_id)){
+        return CHESS_INVALID_ID;
+    }
+    if (!playerExists(chess->player_map, player_id)){
+        return CHESS_PLAYER_NOT_EXIST;
+    }
     
-
+    playerRemove(chess->player_map, player_id);
+    ///iterate over all tournaments that have not ended
+    /// and remove the player from the map and all games he played in
 }
 
 /**
@@ -296,7 +307,9 @@ ChessResult chessEndTournament (ChessSystem chess, int tournament_id);
  *     CHESS_SUCCESS - if average playing time was returned successfully.
  */
 /// todo
-double chessCalculateAveragePlayTime (ChessSystem chess, int player_id, ChessResult* chess_result);
+double chessCalculateAveragePlayTime (ChessSystem chess, int player_id, ChessResult* chess_result){
+
+}
 
 /**
  * chessSavePlayersLevels: prints the rating of all players in the system as
@@ -310,7 +323,9 @@ double chessCalculateAveragePlayTime (ChessSystem chess, int player_id, ChessRes
  *     CHESS_SUCCESS - if the ratings was printed successfully.
  */
  /// todo
-ChessResult chessSavePlayersLevels (ChessSystem chess, FILE* file);
+ChessResult chessSavePlayersLevels (ChessSystem chess, FILE* file){
+
+}
 
 /**
  * chessSaveTournamentStatistics: prints to the file the statistics for each tournament that ended as
@@ -325,4 +340,6 @@ ChessResult chessSavePlayersLevels (ChessSystem chess, FILE* file);
  *     CHESS_SUCCESS - if the ratings was printed successfully.
  */
 /// todo
-ChessResult chessSaveTournamentStatistics (ChessSystem chess, char* path_file);
+ChessResult chessSaveTournamentStatistics (ChessSystem chess, char* path_file){
+
+}

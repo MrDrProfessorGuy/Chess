@@ -6,23 +6,6 @@
 typedef struct game_key* GameKey;
 typedef struct game_data* GameData;
 
-/***************************************************************/
-/********************* Game functions *********************/
-static void freeGameData(MapDataElement game_data);
-static void freeGameKey(MapKeyElement game_key);
-static MapDataElement copyGameData(MapDataElement game_data);
-static MapKeyElement copyGameKey(MapKeyElement game_key);
-static int compareGameKey(MapKeyElement game1_key, MapKeyElement game2_key);
-
-static GameKey createGameKey(PlayerId player1_id, PlayerId player2_id);
-static GameData createGameData(int play_time, Winner winner);
-
-
-static bool gameKeyIsValid(GameKey game_key);
-static bool playerIdIsValid(PlayerId player_id);
-static bool reorderPlayers(PlayerId* id1, PlayerId* id2, Winner* winner);
-
-
 struct game_key{
     PlayerId player1_id;
     PlayerId player2_id;
@@ -33,6 +16,56 @@ struct game_data{
     int play_time;
     Winner winner;
 };
+
+/***************************************************************/
+/********************* static functions *********************/
+
+static void freeGameData(MapDataElement game_data);
+static void freeGameKey(MapKeyElement game_key);
+static MapDataElement copyGameData(MapDataElement game_data);
+static MapKeyElement copyGameKey(MapKeyElement game_key);
+static int compareGameKey(MapKeyElement game1_key, MapKeyElement game2_key);
+
+/**
+ * createGameKey: create a new sorted GameKey
+ * assuming player id's is valid
+ *
+ * @param player1_id
+ * @param player2_id
+ * @return
+ *      NULL - if allocation failed
+ *      GameKey otherwise
+ */
+static GameKey createGameKey(PlayerId player1_id, PlayerId player2_id);
+/**
+ * GameData:
+ * assuming play_time is valid
+ * @param play_time
+ * @param winner
+ * @return
+ *      NULL - if allocation failed
+ *      GameData otherwise
+ */
+static GameData createGameData(int play_time, Winner winner);
+
+
+static bool gameKeyIsValid(GameKey game_key);
+static bool playerIdIsValid(PlayerId player_id);
+/**
+ * reorderPlayers: given valid id's and play_time pointers, the id's will be reordered
+ *      such that id1 < id2 and winner will be set accordingly
+ * @param id1
+ * @param id2
+ * @param winner
+ * @return
+ *      true - if a reorder was made
+ *      false - if the given id's were already in the correct order
+ */
+static bool reorderPlayers(PlayerId* id1, PlayerId* id2);
+static void switchWinner(Winner* winner);
+static bool playerParticipatesInGame(GameKey game_key, PlayerId player_id);
+
+
 /*
 static int countDigits(int num){
     int count = 0;
@@ -74,6 +107,8 @@ static char* playersIdToGameId(int player1_id, int player2_id){
 
 /***********************************************************/
 /********************* Game functions *********************/
+/*********************************************************/
+
 static void freeGameData(MapDataElement game_data){
     free(game_data);
 }
@@ -115,34 +150,16 @@ static int compareGameKey(MapKeyElement game1_key, MapKeyElement game2_key){
     return (((GameKey)game1_key)->player1_id - ((GameKey)game2_key)->player1_id);
 }
 
-/**
- * createGameKey:
- * assuming player id's is valid
- * @param player1_id
- * @param player2_id
- * @return
- *      NULL - if allocation failed
- *      GameKey otherwise
- */
 static GameKey createGameKey(PlayerId player1_id, PlayerId player2_id){
     GameKey game_key = malloc(sizeof(*game_key));
     if (!game_key){
         return NULL;
     }
-    
+    reorderPlayers(&player1_id, &player2_id);
     game_key->player1_id = player1_id;
     game_key->player2_id = player2_id;
     return game_key;
 }
-/**
- * GameData:
- * assuming play_time is valid
- * @param play_time
- * @param winner
- * @return
- *      NULL - if allocation failed
- *      GameData otherwise
- */
 static GameData createGameData(int play_time, Winner winner){
     GameData game_data = malloc(sizeof(*game_data));
     if (!game_data){
@@ -163,12 +180,6 @@ static bool gameKeyIsValid(GameKey game_key){
     
     return true;
 }
-bool playTimeIsValid(int play_time){
-    if (play_time >= 0){
-        return true;
-    }
-    return false;
-}
 static bool playerIdIsValid(PlayerId player_id){
     if (player_id > 0){
         return true;
@@ -176,33 +187,42 @@ static bool playerIdIsValid(PlayerId player_id){
     return false;
 }
 
-/**
- * reorderPlayers: given valid id's and play_time pointers, the id's will be reordered
- *      such that id1 < id2 and winner will be set accordingly
- * @param id1
- * @param id2
- * @param winner
- * @return
- *      true - if a reorder was made
- *      false - if the given id's were already in the correct order
- */
-static bool reorderPlayers(PlayerId* id1, PlayerId* id2, Winner* winner){
+static bool reorderPlayers(PlayerId* id1, PlayerId* id2){
     if (*id1 > *id2){
         PlayerId tmp = *id1;
         *id1 = *id2;
         *id2 = tmp;
-    
-        if (*winner == FIRST_PLAYER){
-            *winner = SECOND_PLAYER;
-        }
-        else if (*winner == SECOND_PLAYER){
-            *winner = FIRST_PLAYER;
-        }
+        
+        return true;
+    }
+    return false;
+}
+static void switchWinner(Winner* winner){
+    if (*winner == FIRST_PLAYER){
+        *winner = SECOND_PLAYER;
+    }
+    else if (*winner == SECOND_PLAYER){
+        *winner = FIRST_PLAYER;
+    }
+}
+
+static bool playerParticipatesInGame(GameKey game_key, PlayerId player_id){
+    assert(game_key);
+    if (game_key->player1_id == player_id || game_key->player2_id == player_id){
         return true;
     }
     return false;
 }
 
+/********************* Public functions *********************/
+
+
+bool playTimeIsValid(int play_time){
+    if (play_time >= 0){
+        return true;
+    }
+    return false;
+}
 bool gameExists(Map game_map, PlayerId player1_id, PlayerId player2_id){
     assert(game_map);
     GameKey game_key = createGameKey(player1_id, player2_id);
@@ -227,7 +247,9 @@ GameResult gameAdd(Map game_map, int play_time, Winner winner,
         return GAME_INVALID_PLAY_TIME;
     }
     
-    reorderPlayers(&player1_id, &player2_id, &winner);
+    if (reorderPlayers(&player1_id, &player2_id)){
+        switchWinner(&winner);
+    }
     GameKey game_key = createGameKey(player1_id, player2_id);
     if (!game_key){
         return GAME_OUT_OF_MEMORY;
@@ -246,7 +268,6 @@ GameResult gameAdd(Map game_map, int play_time, Winner winner,
     
     return GAME_SUCCESS;
 }
-
 
 GameResult gameRemove(Map game_map, PlayerId player1_id, PlayerId player2_id){
     if (!playerIdIsValid(player1_id) || !playerIdIsValid(player2_id) ||
@@ -267,7 +288,20 @@ GameResult gameRemove(Map game_map, PlayerId player1_id, PlayerId player2_id){
 }
 
 
-
+GameResult gameRemovePlayerParticipated(Map game_map, PlayerId player_id){
+    assert(game_map);
+    
+    MAP_FOREACH(GameKey, game_key, game_map){
+        if (playerParticipatesInGame(game_key, player_id)){
+            if (gameRemove(game_map, game_key->player1_id, game_key->player2_id) != GAME_SUCCESS){
+                return GAME_OUT_OF_MEMORY;
+            }
+        }
+        freeGameKey(game_key);
+    }
+    
+    return GAME_SUCCESS;
+}
 
 
 

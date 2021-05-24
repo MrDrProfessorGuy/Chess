@@ -51,6 +51,15 @@ bool playerExceededGames(Map player_map, PlayerId player_id, int num_of_games);
  *      PLAYER_SUCCESS - otherwise
  */
 PlayerResult playerAdd(Map player_map, PlayerId player_id);
+/**
+ * playerRemove: remove a player from the map
+ *      assuming valid player_map
+ * @param player_map
+ * @param player_id
+ * @return
+ *      PLAYER_NOT_EXIST - if player doesn't exist
+ *      PLAYER_SUCCESS
+ */
 PlayerResult playerRemove(Map player_map, PlayerId player_id);
 
 
