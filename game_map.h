@@ -32,13 +32,40 @@ typedef enum {
 typedef int PlayerId;
 #define PLAYER_DELETED -1
 
-GameResult gameAdd(Map game_map, int play_time, Winner winner,
-                    PlayerId player1_id, PlayerId player2_id);
+
 int gameGetLongestPlayTime(); // printed in tournament statistics
 int gameGetTotalPlayTime(); // used for tournament statistics
 GameResult gameRemovePlayer();
 bool gameExists(Map game_map, PlayerId player1_id, PlayerId player2_id);
 
+/**
+ * gameAdd: add a game to the given game map
+ *
+ * @param game_map
+ * @param play_time
+ * @param winner
+ * @param player1_id
+ * @param player2_id
+ * @return GameResult
+ *      GAME_INVALID_ID - one of the players id is invalid, or the same id was given
+ *                        for both players
+ *      GAME_ALREADY_EXISTS - the game exists
+ *      GAME_INVALID_PLAY_TIME - play time is invalid
+ *      GAME_OUT_OF_MEMORY - allocation failed
+ *      GAME_SUCCESS - otherwise
+ */
+GameResult gameAdd(Map game_map, int play_time, Winner winner,
+                   PlayerId player1_id, PlayerId player2_id);
+/**
+ * gameRemove: remove a game from the map
+ * @param game_map
+ * @param player1_id
+ * @param player2_id
+ * @return GameResult
+ *      GAME_OUT_OF_MEMORY - if key allocation failed
+ *      GAME_SUCCESS - otherwise
+ */
+GameResult gameRemove(Map game_map, PlayerId player1_id, PlayerId player2_id);
 
 bool playTimeIsValid(int play_time);
 

@@ -138,16 +138,20 @@ PlayerResult playerAdd(Map player_map, PlayerId player_id){
     
     return PLAYER_SUCCESS;
 }
-
 PlayerResult playerRemove(Map player_map, PlayerId player_id){
     assert(player_map);
     if (mapContains(player_map, &player_id)){
         mapRemove(player_map, &player_id);
         return PLAYER_SUCCESS;
     }
-    return PLAYER_NOT_EXIST
+    return PLAYER_NOT_EXIST;
 }
 
+PlayerData playerGetData(Map player_map, PlayerId player_id){
+    assert(player_map);
+    
+    return mapGet(player_map, &player_id);
+}
 
 
 

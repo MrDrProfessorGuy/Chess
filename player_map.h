@@ -41,6 +41,15 @@ bool playerIdIsValid(PlayerId player_id);
 //can manipulate the data and update statistics
 PlayerData playerGetData(Map player_map, PlayerId player_id);
 bool playerExceededGames(Map player_map, PlayerId player_id, int num_of_games);
+/**
+ *  add a player to the map, does nothing if already exists
+ *
+ * @param player_map - note: assuming the map is valid
+ * @param player_id - note: assuming player_id is valid
+ * @return
+ *      PLAYER_OUT_OF_MEMORY - if allocation error occurred
+ *      PLAYER_SUCCESS - otherwise
+ */
 PlayerResult playerAdd(Map player_map, PlayerId player_id);
 PlayerResult playerRemove(Map player_map, PlayerId player_id);
 

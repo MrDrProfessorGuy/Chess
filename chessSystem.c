@@ -25,6 +25,12 @@
  * CHESS_SUCCESS
  */
 
+typedef enum {
+    ADD = 1,
+    UNDO = -1
+} UpdateMode;
+
+
 /***************************************************************/
 /********************* Helper Functions *********************/
 /***************************************************************/
@@ -36,6 +42,54 @@
 /********************* Static Functions *********************/
 /***********************************************************/
 
+/**
+ * Update 2 competing players data based on the game result .aka winner
+ * @param player_map
+ * @param player1_id
+ * @param player2_id
+ * @param winner
+ */
+static void updatePlayersData(Map player_map, PlayerId player1_id, PlayerId player2_id, Winner winner,
+                              UpdateMode value){
+    assert(player_map);
+    assert(playerIdIsValid(player1_id) && playerIdIsValid(player2_id));
+    
+    PlayerData player1_data = playerGetData(player_map, player1_id);
+    PlayerData player2_data = playerGetData(player_map, player2_id);
+    if (player1_data){
+        player1_data->num_of_games += value;
+        player2_data->num_of_games += value;
+        if (winner == FIRST_PLAYER){
+            player1_data->num_of_wins += value;
+            player2_data->num_of_loses += value;
+        }
+        else if(winner == SECOND_PLAYER){
+            player1_data->num_of_loses += value;
+            player2_data->num_of_wins += value;
+        }
+        else{
+            player1_data->num_of_draws += value;
+            player2_data->num_of_draws += value;
+        }
+    }
+}
+
+static ChessResult addAndUpdatePlayersData(Map player_map,
+                                           PlayerId player1_id, PlayerId player2_id, Winner winner){
+    assert(player_map);
+    assert(playerIdIsValid(player1_id) && playerIdIsValid(player2_id));
+    
+    if (playerAdd(player_map, player1_id) != PLAYER_SUCCESS){
+        return CHESS_OUT_OF_MEMORY;
+    }
+    if (playerAdd(player_map, player2_id) != PLAYER_SUCCESS){
+        playerRemove(player_map, player1_id);
+        return CHESS_OUT_OF_MEMORY;
+    }
+    
+    updatePlayersData(player_map, player1_id, player2_id, winner, ADD);
+    return CHESS_SUCCESS;
+}
 
 /*************************************************************/
 /********************* Public Functions *********************/
@@ -115,7 +169,7 @@ ChessResult chessAddTournament (ChessSystem chess, int tournament_id,
  *     CHESS_EXCEEDED_GAMES - if one of the players played the maximum number of games allowed
  *     CHESS_SUCCESS - if game was added successfully.
  */
-/// todo
+/// todo shrink the function
 ChessResult chessAddGame(ChessSystem chess, int tournament_id, int first_player,
                          int second_player, Winner winner, int play_time){
     
@@ -126,6 +180,7 @@ ChessResult chessAddGame(ChessSystem chess, int tournament_id, int first_player,
         !playerIdIsValid(second_player) || first_player == second_player){
         return CHESS_INVALID_ID;
     }
+    /// add tournamentExists() ?
     Map tournament_map = chess->tournament_map;
     assert(tournament_map);
     if(!tournamentContains(tournament_map, tournament_id)){
@@ -136,21 +191,34 @@ ChessResult chessAddGame(ChessSystem chess, int tournament_id, int first_player,
     }
     Map tournament_game_map = tournamentGetGameMap(chess->tournament_map, tournament_id);
     assert(tournament_game_map);
+    Map tournament_player_map = tournamentGetPlayerMap(tournament_map, tournament_id);
+    assert(tournament_player_map);
+    
     GameResult result = gameAdd(tournament_game_map, play_time, winner, first_player, second_player);
     if (result != GAME_SUCCESS){
         return (ChessResult)result;
     }
-    
-    Map tournament_player_map = tournamentGetPlayerMap(tournament_map, tournament_id);
-    assert(tournament_player_map);
+    /// players might be in the wrong order here
     int max_games = tournamentGetMaxGames(tournament_map, tournament_id);
     if (playerExceededGames(tournament_player_map, first_player, max_games) ||
         playerExceededGames(tournament_player_map, second_player, max_games)){
+        
+        gameRemove(tournament_game_map, first_player, second_player);
         return CHESS_EXCEEDED_GAMES;
     }
     
+    if (addAndUpdatePlayersData(tournament_player_map, first_player, second_player, winner) != CHESS_SUCCESS){
+        gameRemove(tournament_game_map, first_player, second_player);
+        return CHESS_OUT_OF_MEMORY;
+    }
+    if (addAndUpdatePlayersData(chess->player_map, first_player, second_player, winner) != CHESS_SUCCESS){
+        updatePlayersData(tournament_player_map, first_player, second_player, winner, UNDO);
+        gameRemove(tournament_game_map, first_player, second_player);
+        return CHESS_OUT_OF_MEMORY;
+    }
     
-    
+    //TODO: update tournament statistics
+    return CHESS_SUCCESS;
 }
 
 
@@ -186,7 +254,10 @@ ChessResult chessRemoveTournament (ChessSystem chess, int tournament_id);
  *     CHESS_SUCCESS - if player was removed successfully.
  */
 /// todo
-ChessResult chessRemovePlayer(ChessSystem chess, int player_id);
+ChessResult chessRemovePlayer(ChessSystem chess, int player_id){
+    
+
+}
 
 /**
  * chessEndTournament: The function will end the tournament if it has at least one game and
