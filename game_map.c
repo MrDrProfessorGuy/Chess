@@ -9,12 +9,13 @@ typedef struct game_data* GameData;
 struct game_key{
     PlayerId player1_id;
     PlayerId player2_id;
-    
 };
 
 struct game_data{
     int play_time;
     Winner winner;
+    //const PlayerId player1_id;
+    //const PlayerId player2_id;
 };
 
 /***************************************************************/
@@ -63,8 +64,8 @@ static bool playerIdIsValid(PlayerId player_id);
  */
 static bool reorderPlayers(PlayerId* id1, PlayerId* id2);
 static void switchWinner(Winner* winner);
-static bool playerParticipatesInGame(GameKey game_key, PlayerId player_id);
-
+static PlayerId playerParticipatesInGame(GameKey game_key, PlayerId player_id);
+static Winner playerGameResult(GameKey game_key, GameData game_data, PlayerId first_player);
 
 /*
 static int countDigits(int num){
@@ -205,17 +206,35 @@ static void switchWinner(Winner* winner){
         *winner = FIRST_PLAYER;
     }
 }
-
-static bool playerParticipatesInGame(GameKey game_key, PlayerId player_id){
+//returns second player id
+static PlayerId playerParticipatesInGame(GameKey game_key, PlayerId player_id){
     assert(game_key);
-    if (game_key->player1_id == player_id || game_key->player2_id == player_id){
-        return true;
+    if (game_key->player1_id == player_id){
+        return game_key->player2_id;
     }
-    return false;
+    if (game_key->player2_id == player_id){
+        return game_key->player1_id;
+    }
+    return 0;
 }
+
+static Winner playerGameResult(GameKey game_key, GameData game_data, PlayerId first_player){
+    if (first_player == game_key->player2_id){
+        switchWinner(&game_data->winner);
+    }
+    return game_data->winner;
+}
+
 
 /********************* Public functions *********************/
 
+Map gameCreateMap(){
+    return mapCreate(copyGameData, copyGameKey, freeGameData, freeGameKey, compareGameKey);
+}
+
+void gameDestroyMap(Map game_map){
+    mapDestroy(game_map);
+}
 
 bool playTimeIsValid(int play_time){
     if (play_time >= 0){
@@ -223,6 +242,7 @@ bool playTimeIsValid(int play_time){
     }
     return false;
 }
+
 bool gameExists(Map game_map, PlayerId player1_id, PlayerId player2_id){
     assert(game_map);
     GameKey game_key = createGameKey(player1_id, player2_id);
@@ -287,8 +307,7 @@ GameResult gameRemove(Map game_map, PlayerId player1_id, PlayerId player2_id){
     return GAME_SUCCESS;
 }
 
-
-GameResult gameRemovePlayerParticipated(Map game_map, PlayerId player_id){
+GameResult gameRemoveAllPlayerParticipatedGames(Map game_map, PlayerId player_id){
     assert(game_map);
     
     MAP_FOREACH(GameKey, game_key, game_map){
@@ -303,14 +322,41 @@ GameResult gameRemovePlayerParticipated(Map game_map, PlayerId player_id){
     return GAME_SUCCESS;
 }
 
+bool gameGetSecondPlayerId(Map game_map, PlayerId player_id, PlayerId* second_player){
+    assert(game_map);
+    
+    MAP_FOREACH(GameKey, game_key, game_map){
+        *second_player = playerParticipatesInGame(game_key, player_id);
+        if (*second_player){
+            freeGameKey(game_key);
+            return true;
+        }
+    }
+    return false;
+}
 
-
-
-
-
-
-
-
+bool gameGetDataByPlayerId(Map game_map, PlayerId first_player, PlayerId* second_player,
+                                 Winner* winner, int* play_time, bool remove){
+    assert(game_map);
+    
+    MAP_FOREACH(GameKey, game_key, game_map){
+        *second_player = playerParticipatesInGame(game_key, first_player);
+        if (!*second_player){
+            GameData game_data = mapGet(game_map, game_key);
+            assert(game_data);
+            *winner = playerGameResult(game_key, game_data, first_player);
+            *play_time = game_data->play_time;
+            
+            if (remove){
+                gameRemove(game_map, game_key->player1_id, game_key->player2_id);
+            }
+            freeGameKey(game_key);
+            return true;
+        }
+        freeGameKey(game_key);
+    }
+    return false;
+}
 
 
 

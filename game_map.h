@@ -28,13 +28,13 @@ typedef enum {
 } Winner;
 
 
-
 typedef int PlayerId;
 
+Map gameCreateMap();
+void gameDestroyMap(Map game_map);
 
 bool gameExists(Map game_map, PlayerId player1_id, PlayerId player2_id);
 bool playTimeIsValid(int play_time);
-
 /**
  * gameAdd: add a game to the given game map
  *
@@ -72,12 +72,24 @@ GameResult gameRemove(Map game_map, PlayerId player1_id, PlayerId player2_id);
  * @return
  *      GAME_OUT_OF_MEMORY - if an allocation failed
  */
-GameResult gameRemovePlayerParticipated(Map game_map, PlayerId player_id);
+GameResult gameRemoveAllPlayerParticipatedGames(Map game_map, PlayerId player_id);
+
+//bool gameGetSecondPlayerId(Map game_map, PlayerId player_id, PlayerId* second_player);
+/**
+ * get game data given the "first player"
+ *
+ * @param game_map
+ * @param first_player
+ * @param second_player
+ * @param winner
+ * @param play_time
+ * @return
+ */
+bool gameGetDataByPlayerId(Map game_map, PlayerId first_player, PlayerId* second_player,
+                           Winner* winner, int* play_time, bool remove);
 
 
-
-
-
+int gameGetPlayTime();
 
 
 

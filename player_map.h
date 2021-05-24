@@ -24,6 +24,19 @@ typedef enum {
     PLAYER_SUCCESS
 } PlayerResult ;
 
+
+typedef enum {
+    PLAYER_WON = 1,
+    PLAYER_DRAW = 0,
+    PLAYER_LOST = -1
+}DuelResult ;
+
+
+typedef enum {
+    ADD = 1,
+    UNDO = -1
+} UpdateMode;
+
 struct player_data{
     int num_of_games; // used to calculate averages when needed
     int num_of_wins; // used to calculate Level
@@ -38,7 +51,14 @@ void playerDestroyMap(Map player_map);
 bool playerExists(Map player_map, PlayerId player_id);
 
 bool playerIdIsValid(PlayerId player_id);
-//can manipulate the data and update statistics
+/**
+ * return a pointer to the player data
+ * @param player_map
+ * @param player_id
+ * @return
+ *      NULL - if the player does not exist
+ *      PlayerData - otherwise
+ */
 PlayerData playerGetData(Map player_map, PlayerId player_id);
 bool playerExceededGames(Map player_map, PlayerId player_id, int num_of_games);
 /**
@@ -62,5 +82,12 @@ PlayerResult playerAdd(Map player_map, PlayerId player_id);
  */
 PlayerResult playerRemove(Map player_map, PlayerId player_id);
 
+double playerGetLevel(Map player_map, PlayerId player_id);
+
+Map playerGetMapCopy(Map player_map);
+
+PlayerId playerGetMaxLevelAndId(Map player_map, double* max_level, bool remove);
+
+void playerUpdateData(Map player_map, PlayerId player_id, DuelResult result);
 
 #endif //CHESS_PLAYER_MAP_H

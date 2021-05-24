@@ -93,9 +93,6 @@ static bool playerKeyIsValid(PlayerKey player_key){
 }
 
 
-
-
-
 bool playerIdIsValid(PlayerId player_id){
     if (player_id > 0){
         return true;
@@ -164,6 +161,60 @@ PlayerData playerGetData(Map player_map, PlayerId player_id){
     
     return mapGet(player_map, &player_id);
 }
+
+double playerGetLevel(Map player_map, PlayerId player_id){
+    assert(player_map);
+    
+    PlayerData data = playerGetData(player_map, player_id);
+    if (data->num_of_games == 0){
+        return 0;
+    }
+    return (double)(6*data->num_of_wins - 10*data->num_of_loses + 2*data->num_of_loses)/(data->num_of_games);
+    
+}
+
+
+Map playerGetMapCopy(Map player_map){
+    assert(player_map);
+    return mapCopy(player_map);
+}
+
+
+PlayerId playerGetMaxLevelAndId(Map player_map, double* max_level, bool remove){
+    assert(player_map);
+    double current_level = 0;
+    PlayerId max_id = 0;
+    *max_level = 0;
+    
+    MAP_FOREACH(PlayerKey , player_key, player_map){
+        current_level = playerGetLevel(player_map, *player_key);
+        if (current_level > *max_level){
+            max_id = *player_key;
+            *max_level = current_level;
+        }
+        freePlayerKey(player_key);
+    }
+    if (remove){
+        playerRemove(player_map, max_id);
+    }
+    return max_id;
+}
+
+void playerUpdateData(Map player_map, PlayerId first_player, DuelResult result){
+    assert(player_map);
+    assert(playerIdIsValid(first_player));
+    
+    PlayerData second_player_data = playerGetData(player_map, first_player);
+    if (result == PLAYER_LOST){
+        second_player_data->num_of_loses--;
+        second_player_data->num_of_wins++;
+    }
+    else if (result == PLAYER_DRAW){
+        second_player_data->num_of_draws--;
+        second_player_data->num_of_wins++;
+    }
+}
+
 
 
 

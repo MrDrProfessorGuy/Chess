@@ -25,10 +25,7 @@
  * CHESS_SUCCESS
  */
 
-typedef enum {
-    ADD = 1,
-    UNDO = -1
-} UpdateMode;
+
 
 
 /***************************************************************/
@@ -42,6 +39,9 @@ typedef enum {
 /********************* Static Functions *********************/
 /***********************************************************/
 
+
+
+
 /**
  * Update 2 competing players data based on the game result .aka winner
  * @param player_map
@@ -49,16 +49,18 @@ typedef enum {
  * @param player2_id
  * @param winner
  */
-static void updatePlayersData(Map player_map, PlayerId player1_id, PlayerId player2_id, Winner winner,
-                              UpdateMode value){
+void updatePlayersData(Map player_map, PlayerId player1_id, PlayerId player2_id,
+                              Winner winner, int play_time, UpdateMode value){
     assert(player_map);
     assert(playerIdIsValid(player1_id) && playerIdIsValid(player2_id));
     
     PlayerData player1_data = playerGetData(player_map, player1_id);
     PlayerData player2_data = playerGetData(player_map, player2_id);
-    if (player1_data){
+    if (player1_data && player2_data){
         player1_data->num_of_games += value;
         player2_data->num_of_games += value;
+        player1_data->total_play_time += value*play_time;
+        player2_data->total_play_time += value*play_time;
         if (winner == FIRST_PLAYER){
             player1_data->num_of_wins += value;
             player2_data->num_of_loses += value;
@@ -74,8 +76,8 @@ static void updatePlayersData(Map player_map, PlayerId player1_id, PlayerId play
     }
 }
 
-static ChessResult addAndUpdatePlayersData(Map player_map,
-                                           PlayerId player1_id, PlayerId player2_id, Winner winner){
+static ChessResult addAndUpdatePlayersData(Map player_map,PlayerId player1_id,
+                                           PlayerId player2_id, Winner winner, int play_time){
     assert(player_map);
     assert(playerIdIsValid(player1_id) && playerIdIsValid(player2_id));
     
@@ -207,16 +209,15 @@ ChessResult chessAddGame(ChessSystem chess, int tournament_id, int first_player,
         return CHESS_EXCEEDED_GAMES;
     }
     
-    if (addAndUpdatePlayersData(tournament_player_map, first_player, second_player, winner) != CHESS_SUCCESS){
-        gameRemove(tournament_game_map, first_player, second_player);
-        return CHESS_OUT_OF_MEMORY;
-    }
     if (addAndUpdatePlayersData(chess->player_map, first_player, second_player, winner) != CHESS_SUCCESS){
         updatePlayersData(tournament_player_map, first_player, second_player, winner, UNDO);
         gameRemove(tournament_game_map, first_player, second_player);
         return CHESS_OUT_OF_MEMORY;
     }
-    
+    if (addAndUpdatePlayersData(tournament_player_map, first_player, second_player, winner) != CHESS_SUCCESS){
+        gameRemove(tournament_game_map, first_player, second_player);
+        return CHESS_OUT_OF_MEMORY;
+    }
     //TODO: update tournament statistics
     return CHESS_SUCCESS;
 }
@@ -267,6 +268,7 @@ ChessResult chessRemovePlayer(ChessSystem chess, int player_id){
     
     playerRemove(chess->player_map, player_id);
     ///iterate over all tournaments that have not ended
+    
     /// and remove the player from the map and all games he played in
 }
 
@@ -322,10 +324,25 @@ double chessCalculateAveragePlayTime (ChessSystem chess, int player_id, ChessRes
  *     CHESS_SAVE_FAILURE - if an error occurred while saving.
  *     CHESS_SUCCESS - if the ratings was printed successfully.
  */
- /// todo
 ChessResult chessSavePlayersLevels (ChessSystem chess, FILE* file){
-
+    if (!chess){
+        return CHESS_NULL_ARGUMENT;
+    }
+    
+    Map player_map_copy = playerGetMapCopy(chess->player_map);
+    double max_level = 0;
+     PlayerId player_id = playerGetMaxLevelAndId(player_map_copy, &max_level, true);
+    
+     while (playerIdIsValid(player_id)){
+         fprintf(file, "%d %.2f", player_id, max_level);
+         player_id = playerGetMaxLevelAndId(player_map_copy, &max_level, true);
+     }
+    
+    fclose(file);
 }
+
+
+
 
 /**
  * chessSaveTournamentStatistics: prints to the file the statistics for each tournament that ended as
