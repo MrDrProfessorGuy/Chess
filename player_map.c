@@ -123,7 +123,7 @@ bool playerExceededGames(Map player_map, PlayerId player_id, int num_of_games){
     assert(player_map);
     PlayerData player_data = mapGet(player_map, &player_id);
     assert(player_data);
-    if (player_data->num_of_games < num_of_games){
+    if (player_data->num_of_games <= num_of_games){
         return false;
     }
     return true;

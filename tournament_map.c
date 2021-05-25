@@ -7,7 +7,6 @@
 #include <string.h>
 #include <stdio.h>
 
-#define ID_TOURNAMENT_NOT_EXIST_IN_CHESS -1;
 
 typedef TournamentId* TournamentKey;
 typedef struct tournament_data* TournamentData;
@@ -23,8 +22,10 @@ struct tournament_data {
     int total_game_time;
     int longest_game_time;
     int num_of_players;
-    ///we need to add number of players
 };
+
+
+
 
 
 
@@ -54,7 +55,7 @@ static MapKeyElement copyTournamentKey(MapKeyElement key);
 static int compareTournamentKey(MapKeyElement key1, MapKeyElement key2);
 
 static TournamentKey createTournamentKey();
-static TournamentData createTournamentData(Location location, int max_games_per_player);
+static TournamentData createTournamentData(const char* location, int max_games_per_player);
 
 static TournamentData tournamentGet(Map tournament_map, TournamentId tournament_id);
 
@@ -107,7 +108,7 @@ static MapDataElement copyTournamentData(MapDataElement data) {
     data_copy->player_map = player_map_copy;
 
     //is malloc and all needed? or strcpy(tournament_data_copy->location, tournament_data->location) enough?
-    Location location_copy = malloc(sizeof(strlen(((TournamentData)data)->location) + 1));
+    Location location_copy = malloc(sizeof(strlen(((TournamentData)data)->location) + 1));/// can discard const?
     if (!location_copy) {
         freeTournamentData(data_copy);
         //mapDestroy(game_map_copy);
@@ -115,7 +116,7 @@ static MapDataElement copyTournamentData(MapDataElement data) {
         return NULL;
     }
 
-    data_copy->location = strcpy(location_copy, ((TournamentData)data)->location);
+    data_copy->location = strcpy(location_copy, ((TournamentData)data)->location);/// can discard const?
 
     data_copy->winner_id = ((TournamentData)data)->winner_id; 
     data_copy->max_games_per_player = ((TournamentData)data)->max_games_per_player;
@@ -147,7 +148,7 @@ static void freeTournamentData(MapDataElement data) {
     TournamentData new_data = (TournamentData)data;// is this true?
     gameDestroyMap(new_data->game_map);
     playerDestroyMap(new_data->player_map);
-    free(new_data->location);
+    free(new_data->location); /// can discard const?
     free(data);
 }
 
@@ -172,7 +173,7 @@ static int compareTournamentKey(MapKeyElement key1, MapKeyElement key2) {
 /***************************************************************/
 /********************* helping Tournament functions *********************/
 
-static TournamentData createTournamentData(Location location, int max_games_per_player){
+static TournamentData createTournamentData(const char* location, int max_games_per_player){
     TournamentData tournament_data = malloc(sizeof(*tournament_data));
     if (!tournament_data) {
         return NULL;
@@ -270,19 +271,37 @@ Map tournamentCopy(Map tournament_map) {
     return mapCopy(tournament_map);
 }
 
-bool tournamentEnded(Map tournament_map,TournamentId tournament_id) {
+/**
+* tournamentEnded: Checks if a tournament in the map has ended.
+*
+* @param tournament_map - The map to search in
+* @param tournament_id - The id tournament to look for.
+* @return
+* 	false - if one or more of the inputs is null, or if the tournament was not found in the map.
+* 	true - if the tournament has ended.
+*/
+bool tournamentEnded(Map tournament_map, TournamentId tournament_id) {
     if (!tournament_map || !(tournamentIdIsValid(tournament_id))) {
-        return -1;// not good how would they know if it's false or a null argument was sent?
-                  //is assert okay?
+        return false;// similar to what was done in mapContains
+        //how would they know if it's false or a tournament_id is invalid or id_not_found?
+        //is assert okay in all of these casese?
     }
+    //there is an conversion between any ptr and void*
     TournamentData data_not_copied = tournamentGet(tournament_map, tournament_id);
-    if (data_not_copied) {
-        return (data_not_copied->has_ended);
+    if (!data_not_copied) {
+        //this case could only happen if of tournament_id does not exist
+        //other cases have already been checked in this function above
+        //and data element as NULL is not allowed in our implementation due to the restrictions in mapPut
+        //hence, assert
+        assert(tournamentContains(tournament_map, tournament_id) == false);
+        return false;
     }
-
-    assert(!tournamentContains(tournament_map, tournament_id));
-    return false;
-
+    
+    //if we're here then for sure id exists in tournament
+    assert(tournamentContains(tournament_map, tournament_id) == true);
+    
+    return (data_not_copied->has_ended);
+    
 }
 
 TournamentData tournamentGet(Map tournament_map, TournamentId tournament_id) {
@@ -311,131 +330,125 @@ TournamentResult tournamentGetMaxGamesPerPlayer(Map tournament_map, TournamentId
 
 }
 
-//here playerID is int..so maybe int like above? 
 PlayerId tournamentGetWinnerId(Map tournament_map, TournamentId tournament_id) {
     if (!tournament_map || !(tournamentIdIsValid(tournament_id))) {
-        return 0; //again here what to return?
+        return -1; //again, similar to getSize
     }
-
+    
     TournamentData data_not_copied = tournamentGet(tournament_map, tournament_id);
-        //and again make sure the case (!data) should/n't happen
-        if (data_not_copied) {
-            return (data_not_copied->max_games_per_player);//no need for a copy right? 
-        }
-    return -1; //here NULL ARGUMENT CANNOT HAPPEN DUE TO THE CHECK ABOVE
-        // !tournament_map
-
+    if (!data_not_copied) {
+        return -1; //..
+    }
+    
+    //this case could only happen if tournament_id exist
+    assert(tournamentContains(tournament_map, tournament_id) == true);
+    
+    return data_not_copied->max_games_per_player;//no need for a copy right?
 }
 
 Location tournamentGetLocation(Map tournament_map, TournamentId tournament_id) {
     if (!tournament_map || !(tournamentIdIsValid(tournament_id))) {
-        return NULL;//can I return NULL as cont char*?
-    }
-
-    TournamentData data_not_copied = tournamentGet(tournament_map, tournament_id);
-    //and again make sure the case (!data) should/n't happen
-    if (!data_not_copied) {
-        return NULL;
+        return NULL;//can I return NULL as char*?
+        //if not then ptr char* to store location and return result?
     }
     
+    TournamentData data_not_copied = tournamentGet(tournament_map, tournament_id);
+    if (!data_not_copied) {
+        return NULL;// as char?
+    }
+    
+    //this case could only happen if tournament_id exist
+    assert(tournamentContains(tournament_map, tournament_id) == true);
+    
+    //should we copy location first and then return it? because get works with no copies
+    // but it's an array of chars..(same as data that was a ptr)
     return data_not_copied->location;
 }
 
 bool tournamentContains(Map tournament_map, TournamentId tournament_id) {
-    if (!tournament_map || (!tournamentIdIsValid(tournament_id))) {
-        return 0;//make sure this is okay
+    if (!tournament_map || !tournamentIdIsValid(tournament_id)) {
+        return false;//make sure this is okay
     }
-
+    
     return mapContains(tournament_map, &tournament_id);
 }
 
 Map tournamentGetPlayerMap(Map tournament_map, TournamentId tournament_id) {
-    //!tournament_map is checked in maps functions so is there a need to check it here?
     if (!tournament_map || (!tournamentIdIsValid(tournament_id))) {
-        return NULL;
+        return NULL;//is NULL okay for tournament id invalid? maybe assert?
     }
-
+    
     TournamentData data_not_copied = tournamentGet(tournament_map, tournament_id);
-    //and again make sure the case (!data) should/n't happen
     if (!data_not_copied) {
         return NULL;
     }
     
-    return data_not_copied->player_map;
-
+    // this case could only happen if tournament_id exists
+    assert(tournamentContains(tournament_map, tournament_id) == true);
+    
+    return data_not_copied->player_map;//again not copied because we need it this way
+    
 }
 
 Map tournamentGetGameMap(Map tournament_map, TournamentId tournament_id) {
-    //!tournament_map is checked in maps functions so is there a need to check it here?
     if (!tournament_map || (!tournamentIdIsValid(tournament_id))) {
-        return NULL;
+        return NULL;//same as before
     }
-
+    
     TournamentData data_not_copied = tournamentGet(tournament_map, tournament_id);
-    //and again make sure the case (!data) should/n't happen
     if (!data_not_copied) {
         return NULL;
     }
-
-    return data_not_copied->game_map;
-
+    // this case could only happen if tournament_id exists
+    assert(tournamentContains(tournament_map, tournament_id) == true);
+    return data_not_copied->game_map;//again not copied because we need it this way
+    
 }
 
 int tournamentGetNumOfGames(Map tournament_map, TournamentId tournament_id) {
     if (!tournament_map || (!tournamentIdIsValid(tournament_id))) {
-        return 0;//or -1 or what?
+        return -1; //as getSize, ok?
     }
     TournamentData data_not_copied = tournamentGet(tournament_map, tournament_id);
-    //and again make sure the case (!data) should/n't happen
     if (!data_not_copied) {
-        return 0;//same as above
+        return -1;//same as above
     }
-
-    return data_not_copied->num_of_games;//should this be copied? it's int..
-
+    
+    // this case could only happen if tournament_id exists
+    assert(tournamentContains(tournament_map, tournament_id) == true);
+    return data_not_copied->num_of_games;
+    
 }
 
 int tournamentGetTotalPlayTime(Map tournament_map, TournamentId tournament_id) {
-    if (!tournament_map || (!tournamentIdIsValid(tournament_id))) {
-        return 0;//same
+    if (!tournament_map || !tournamentIdIsValid(tournament_id)) {
+        return -1;//same
     }
     TournamentData data_not_copied = tournamentGet(tournament_map, tournament_id);
-    //and again make sure the case (!data) should/n't happen
     if (!data_not_copied) {
-        return 0;//same
-    }
-
-    return data_not_copied->total_game_time;//should this be copied? it's int..no right?
-                                            //the user doesn't get an address just a value of int 
-
-}
-
-int tournamentGetLongetGame(Map tournament_map, TournamentId tournament_id) {
-    if (!tournament_map || (!tournamentIdIsValid(tournament_id))) {
-        return 0;//same
-    }
-    Map game_map = tournamentGetPlayerMap(tournament_map, tournament_id);
-    int tournament_game_map_size = mapGetSize(game_map);//why couldn't do
-                                                   //mapGetSize(tournament_map->game_map)
-    int count = 1;// 1 because there's always the deme node 
-
-    TournamentKey key_id = mapGetFirst(tournament_map);// since we have automatic hamara from void* to any kind
-
-    while (count <= tournament_game_map_size) {
-        
-        if (compareTournamentKey(key_id, &tournament_id) == 0) {//is this okay? sending (void*, int*)?
-            TournamentData not_copied_data = tournamentGet(tournament_map, *key_id);
-            //check if valid
-            freeTournamentKey(key_id);
-            return not_copied_data->longest_game_time;
-        }
-        freeTournamentKey(key_id);
-        key_id = mapGetNext(game_map);
-        count++;
+        return -1;//same
     }
     
-    return 0;
+    // this case could only happen if tournament_id exists
+    assert(tournamentContains(tournament_map, tournament_id) == true);
+    return data_not_copied->total_game_time;
 }
+
+int tournamentGetLongestGame(Map tournament_map, TournamentId tournament_id) {
+    if (!tournament_map || !tournamentIdIsValid(tournament_id)) {
+        return -1;//same
+    }
+    
+    TournamentData data_not_copied = tournamentGet(tournament_map, tournament_id);
+    if (!data_not_copied) {
+        return -1;//same
+    }
+    
+    // this case could only happen if tournament_id exists
+    assert(tournamentContains(tournament_map, tournament_id) == true);
+    return data_not_copied->longest_game_time;
+}
+
 
 bool tournamentIdIsValid(TournamentId id){
     if (id > 0) {
@@ -503,6 +516,7 @@ TournamentResult tournamentSaveStatistics(Map tournament_map, char* path_file){
     }
     
     fclose(stream);
+    return TOURNAMENT_SUCCESS;
 }
 
 static TournamentResult updatePlayerDataAfterOpponentQuit(Map player_map, PlayerId player_id, DuelResult game_result){
@@ -566,10 +580,54 @@ void tournamentPlayerRemove(Map tournament_map, Map chess_player_map, PlayerId f
 
 TournamentResult tournamentRemove(Map tournament_map, TournamentId tournament_id){
 
+
+
+
+
+
+
+
+}
+
+TournamentResult tournamentAdd(Map tournament_map, int tournament_id,
+                                    int max_games_per_player, const char* tournament_location){
+ 
+    if (!tournament_map){
+        return TOURNAMENT_NULL_ARGUMENT;
+    }
+    if (!tournamentIdIsValid(tournament_id)){
+        return TOURNAMENT_INVALID_ID;
+    }
+    if (tournamentContains(tournament_map, tournament_id)){
+        return TOURNAMENT_TOURNAMENT_ALREADY_EXISTS;
+    }
+    if (!tournamentLocationIsValid(tournament_location)){
+        return TOURNAMENT_INVALID_LOCATION;
+    }
+    if (max_games_per_player <= 0){
+        return TOURNAMENT_INVALID_MAX_GAMES;
+    }
+    /// check if key should be coppied before sending to mapPut
+    /// are we supposed to free key and data if mapPut failes somehow
+    /// does the implementation include copying
+    TournamentData tournament_data = createTournamentData(tournament_location, max_games_per_player);
+    if (!tournament_data){
+        return TOURNAMENT_OUT_OF_MEMORY;
+    }
+    TournamentKey tournament_key = createTournamentKey(tournament_id);
+    if (!tournament_key){
+        freeTournamentData(tournament_data);
+        return TOURNAMENT_OUT_OF_MEMORY;
+    }
+    
+    mapPut(tournament_map, tournament_key, tournament_data);/// copy?
+    freeTournamentData(tournament_data);
+    freeTournamentKey(tournament_key);
+    return TOURNAMENT_SUCCESS;
 }
 
 
-double tournamentGetPlayerAveragePlayTime(Map tournament_map, PlayerId player_id, ){
+double tournamentGetPlayerAveragePlayTime(Map tournament_map, PlayerId player_id){
     if (!tournament_map){
         return
     }
@@ -585,7 +643,20 @@ TournamentResult tournamentEnd(){
 
 }
 
-
+bool tournamentLocationIsValid(const char* location){
+    assert(location);
+    int len = strlen(location);
+    
+    if ('A' <= location[0] && location[0] <= 'Z'){
+        for (int letter = 1; letter < len; letter++) {
+            if (!(('a' <= location[letter] && location[letter] <= 'z') || location[letter] == ' ')){
+                return false;
+            }
+        }
+    }
+    
+    return true;
+}
 
 
 /*
@@ -677,3 +748,43 @@ TournamentResult tournamentAddGame(Map tournament_map, TournamentId tournament_i
 
     return TOURNAMENT_SUCCESS;
 }
+
+
+
+
+
+TournamentResult tournamentUpdateStatistics(Map tournament_map, TournamentId tournament_id,
+                                            int play_time,int new_players){
+    
+    if (!tournament_map){
+        return TOURNAMENT_NULL_ARGUMENT;
+    }
+    if (!tournamentIdIsValid(tournament_id)){
+        return TOURNAMENT_INVALID_ID;
+    }
+    TournamentData tournament_data = tournamentGet(tournament_map, tournament_id);
+    if (!tournament_data){
+        return TOURNAMENT_TOURNAMENT_NOT_EXIST;
+    }
+    
+    tournament_data->num_of_games++;
+    tournament_data->total_game_time += play_time;
+    if (play_time > tournament_data->longest_game_time){
+        tournament_data->longest_game_time = play_time;
+    }
+    tournament_data->num_of_players += new_players;
+    return TOURNAMENT_SUCCESS;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+

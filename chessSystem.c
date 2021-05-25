@@ -25,6 +25,10 @@
  * CHESS_SUCCESS
  */
 
+struct chess_system_t{
+    Map tournament_map;
+    Map player_map;
+};
 
 
 
@@ -38,7 +42,93 @@
 /*************************************************************/
 /********************* Static Functions *********************/
 /***********************************************************/
+static ChessResult chessResultToTournamentResult(TournamentResult result){
+    if (result == TOURNAMENT_OUT_OF_MEMORY){
+        return CHESS_OUT_OF_MEMORY;
+    }
+    else if (result == TOURNAMENT_NULL_ARGUMENT){
+        return CHESS_NULL_ARGUMENT;
+    }
+    else if (result == TOURNAMENT_INVALID_ID){
+        return CHESS_INVALID_ID;
+    }
+    else if (result == TOURNAMENT_INVALID_LOCATION){
+        return CHESS_INVALID_LOCATION;
+    }
+    else if (result == TOURNAMENT_INVALID_MAX_GAMES){
+        return CHESS_INVALID_MAX_GAMES;
+    }
+    else if (result == TOURNAMENT_TOURNAMENT_ALREADY_EXISTS){
+        return CHESS_TOURNAMENT_ALREADY_EXISTS;
+    }
+    else if (result == TOURNAMENT_TOURNAMENT_NOT_EXIST){
+        return CHESS_TOURNAMENT_NOT_EXIST;
+    }
+    else if (result == TOURNAMENT_GAME_ALREADY_EXISTS){
+        return CHESS_GAME_ALREADY_EXISTS;
+    }
+    else if (result == TOURNAMENT_INVALID_PLAY_TIME){
+        return CHESS_INVALID_PLAY_TIME;
+    }
+    else if (result == TOURNAMENT_EXCEEDED_GAMES){
+        return CHESS_EXCEEDED_GAMES;
+    }
+    else if (result == TOURNAMENT_PLAYER_NOT_EXIST){
+        return CHESS_PLAYER_NOT_EXIST;
+    }
+    else if (result == TOURNAMENT_TOURNAMENT_ENDED){
+        return CHESS_TOURNAMENT_ENDED;
+    }
+    else if (result == TOURNAMENT_NO_TOURNAMENTS_ENDED){
+        return CHESS_NO_TOURNAMENTS_ENDED;
+    }
+    else if (result == TOURNAMENT_NO_GAMES){
+        return CHESS_NO_GAMES;
+    }
+    else if (result == TOURNAMENT_SAVE_FAILURE){
+        return CHESS_SAVE_FAILURE;
+    }
+    assert(result == TOURNAMENT_SUCCESS);
+    return CHESS_SUCCESS;
+}
 
+static ChessResult checkValidityForAddGame(ChessSystem chess, int tournament_id, int first_player,
+                                           int second_player, Winner winner, int play_time){
+    if (!chess){
+        return CHESS_NULL_ARGUMENT;
+    }
+    if (!tournamentIdIsValid(tournament_id) || !playerIdIsValid(first_player) ||
+        !playerIdIsValid(second_player) || first_player == second_player){
+        return CHESS_INVALID_ID;
+    }
+    Map tournament_map = chess->tournament_map;
+    assert(tournament_map);
+    Map tournament_player_map = tournamentGetPlayerMap(tournament_map, tournament_id);
+    assert(tournament_player_map);
+    Map tournament_game_map = tournamentGetGameMap(tournament_map, tournament_id);
+    
+    if(!tournament_game_map){
+        return CHESS_TOURNAMENT_NOT_EXIST;
+    }
+    if (tournamentEnded(tournament_map, tournament_id)){
+        return CHESS_TOURNAMENT_ENDED;
+    }
+    
+    if (gameExists(tournament_game_map, first_player, second_player)){
+        return CHESS_GAME_ALREADY_EXISTS;
+    }
+    if (!playTimeIsValid(play_time)){
+        return CHESS_INVALID_PLAY_TIME;
+    }
+    int max_games = tournamentGetMaxGames(tournament_map, tournament_id);
+    if (playerExceededGames(tournament_player_map, first_player, max_games) ||
+        playerExceededGames(tournament_player_map, second_player, max_games)){
+        
+        return CHESS_EXCEEDED_GAMES;
+    }
+    
+    return CHESS_SUCCESS;
+}
 
 
 
@@ -89,7 +179,7 @@ static ChessResult addAndUpdatePlayersData(Map player_map,PlayerId player1_id,
         return CHESS_OUT_OF_MEMORY;
     }
     
-    updatePlayersData(player_map, player1_id, player2_id, winner, ADD);
+    updatePlayersData(player_map, player1_id, player2_id, winner, play_time, ADD);
     return CHESS_SUCCESS;
 }
 
@@ -97,10 +187,6 @@ static ChessResult addAndUpdatePlayersData(Map player_map,PlayerId player1_id,
 /********************* Public Functions *********************/
 /***********************************************************/
 
-struct chess_system_t{
-    Map tournament_map;
-    Map player_map;
-};
 
 
 
@@ -111,7 +197,23 @@ struct chess_system_t{
  *     in case of an allocation error)
  */
 ChessSystem chessCreate(){
-    printf("");
+    ChessSystem chess_system = malloc(sizeof(*chess_system));
+    if (!chess_system){
+        return NULL;
+    }
+    
+    chess_system->player_map = playerCreateMap();
+    if (!chess_system->player_map){
+        chessDestroy(chess_system);
+        return NULL;
+    }
+    chess_system->tournament_map = tournamentCreate();
+    if (!chess_system->tournament_map){
+        chessDestroy(chess_system);
+        return NULL;
+    }
+    
+    return chess_system;
 }
 
 /**
@@ -122,7 +224,12 @@ ChessSystem chessCreate(){
  *     allowed, and in that case the function does nothing.
  */
 void chessDestroy(ChessSystem chess){
-    printf("");
+    if (!chess){
+        return;
+    }
+    playerDestroyMap(chess->player_map);
+    tournamentDestroy(chess->tournament_map);
+    free(chess);
 }
 
 /**
@@ -146,53 +253,28 @@ void chessDestroy(ChessSystem chess){
 ChessResult chessAddTournament (ChessSystem chess, int tournament_id,
                                 int max_games_per_player, const char* tournament_location){
     
-    
-    
-    
-    
-    
-}
-
-
-
-static ChessResult checkValidityForAddGame(ChessSystem chess, int tournament_id, int first_player,
-                                    int second_player, Winner winner, int play_time){
     if (!chess){
         return CHESS_NULL_ARGUMENT;
     }
-    if (!tournamentIdIsValid(tournament_id) || !playerIdIsValid(first_player) ||
-        !playerIdIsValid(second_player) || first_player == second_player){
+    if (!tournamentIdIsValid(tournament_id)){
         return CHESS_INVALID_ID;
     }
-    /// add tournamentExists() ?
-    Map tournament_map = chess->tournament_map;
-    assert(tournament_map);
-    Map tournament_player_map = tournamentGetPlayerMap(tournament_map, tournament_id);
-    assert(tournament_player_map);
-    Map tournament_game_map = tournamentGetGameMap(chess->tournament_map, tournament_id);
-    
-    if(!tournament_game_map){
-        return CHESS_TOURNAMENT_NOT_EXIST;
+    if (!tournamentLocationIsValid(tournament_location)){
+        return CHESS_INVALID_LOCATION;
     }
-    if (tournamentEnded(tournament_map, tournament_id)){
-        return CHESS_TOURNAMENT_ENDED;
+    if (max_games_per_player <= 0){
+        return CHESS_INVALID_MAX_GAMES;
     }
     
-    if (gameExists(tournament_game_map, first_player, second_player)){
-        return CHESS_GAME_ALREADY_EXISTS;
-    }
-    if (!playTimeIsValid(play_time)){
-        return CHESS_INVALID_PLAY_TIME;
-    }
-    int max_games = tournamentGetMaxGames(tournament_map, tournament_id);
-    if (playerExceededGames(tournament_player_map, first_player, max_games) ||
-        playerExceededGames(tournament_player_map, second_player, max_games)){
-        
-        return CHESS_EXCEEDED_GAMES;
-    }
+    TournamentResult result = tournamentAdd(chess->tournament_map,
+                                            tournament_id, max_games_per_player, tournament_location);
     
-    return CHESS_SUCCESS;
+    return chessResultToTournamentResult(result);
+    
 }
+
+
+
 
 /**
  * chessAddGame: add a new match to a chess tournament.
@@ -236,16 +318,21 @@ ChessResult chessAddGame(ChessSystem chess, int tournament_id, int first_player,
     if (result != GAME_SUCCESS){
         return CHESS_OUT_OF_MEMORY;
     }
+    int new_players = 0;
+    new_players += playerExists(tournament_player_map, first_player);
+    new_players += playerExists(tournament_player_map, second_player);
     
-    if (addAndUpdatePlayersData(chess->player_map, first_player, second_player, winner) != CHESS_SUCCESS){
+    if (addAndUpdatePlayersData(chess->player_map, first_player, second_player, winner, play_time) != CHESS_SUCCESS){
         gameRemove(tournament_game_map, first_player, second_player);
         return CHESS_OUT_OF_MEMORY;
     }
-    if (addAndUpdatePlayersData(tournament_player_map, first_player, second_player, winner) != CHESS_SUCCESS){
+    if (addAndUpdatePlayersData(tournament_player_map, first_player, second_player, winner, play_time)
+        != CHESS_SUCCESS){
+        updatePlayersData(chess->player_map, first_player, second_player, winner, play_time, UNDO);
         gameRemove(tournament_game_map, first_player, second_player);
         return CHESS_OUT_OF_MEMORY;
     }
-    //TODO: update tournament statistics
+    tournamentUpdateStatistics(tournament_map,tournament_id, play_time, new_players);
     return CHESS_SUCCESS;
 }
 
@@ -427,9 +514,6 @@ ChessResult chessSavePlayersLevels (ChessSystem chess, FILE* file){
     return CHESS_SUCCESS;
 }
 
-
-
-
 /**
  * chessSaveTournamentStatistics: prints to the file the statistics for each tournament that ended as
  * explained in the *.pdf
@@ -448,10 +532,8 @@ ChessResult chessSaveTournamentStatistics (ChessSystem chess, char* path_file){
         return CHESS_NULL_ARGUMENT;
     }
     
-    
-
-    
-    
+    TournamentResult result = tournamentSaveStatistics(chess->tournament_map, path_file);
+    //// convert tournament result to chess result
     
     return CHESS_SUCCESS;
 }
