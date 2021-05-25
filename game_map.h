@@ -88,14 +88,7 @@ GameResult gameRemoveAllPlayerParticipatedGames(Map game_map, PlayerId player_id
 bool gameGetDataByPlayerId(Map game_map, PlayerId first_player, PlayerId* second_player,
                            Winner* winner, int* play_time, bool remove);
 
-
-int gameGetPlayTime();
-
-
-
-
-
-
+int gameGetNumOfGames(Map game_map);
 
 
 

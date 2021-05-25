@@ -21,7 +21,26 @@ typedef enum {
     TOURNAMENT_SAVE_FAILURE,
     TOURNAMENT_SUCCESS
 } TournamentResult ;
-
+/*
+typedef enum {
+    TOURNAMENT_OUT_OF_MEMORY,
+    TOURNAMENT_NULL_ARGUMENT,
+    TOURNAMENT_INVALID_ID,
+    TOURNAMENT_INVALID_LOCATION,
+    TOURNAMENT_INVALID_MAX_GAMES,
+    TOURNAMENT_TOURNAMENT_ALREADY_EXISTS,
+    TOURNAMENT_TOURNAMENT_NOT_EXIST,
+    TOURNAMENT_GAME_ALREADY_EXISTS,
+    TOURNAMENT_INVALID_PLAY_TIME,
+    TOURNAMENT_EXCEEDED_GAMES,
+    TOURNAMENT_PLAYER_NOT_EXIST,
+    TOURNAMENT_TOURNAMENT_ENDED,
+    TOURNAMENT_NO_TOURNAMENTS_ENDED,
+    TOURNAMENT_NO_GAMES,
+    TOURNAMENT_SAVE_FAILURE,
+    TOURNAMENT_SUCCESS
+} TournamentResult ;
+*/
 typedef int TournamentId;
 typedef int PlayerId;
 typedef char* Location;
@@ -44,7 +63,8 @@ Map tournamentGetPlayerMap(Map tournament_map, TournamentId tournament_id);
 Map tournamentGetGameMap(Map tournament_map, TournamentId tournament_id);
 bool tournamentIdIsValid(TournamentId id);
 
+void tournamentPlayerRemove(Map tournament_map, Map chess_player_map, PlayerId first_player);
 
-
+int tournamentNumOfActiveGames(Map tournament_map, TournamentId tournament_id);
 
 #endif //TOURNAMENT_MAP_H

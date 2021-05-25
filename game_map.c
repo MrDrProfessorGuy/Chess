@@ -2,9 +2,12 @@
 #include <assert.h>
 #include <stdlib.h>
 
+#define PLAYER_NOT_PARTICIPATES 0
+
 
 typedef struct game_key* GameKey;
 typedef struct game_data* GameData;
+
 
 struct game_key{
     PlayerId player1_id;
@@ -14,8 +17,8 @@ struct game_key{
 struct game_data{
     int play_time;
     Winner winner;
-    //const PlayerId player1_id;
-    //const PlayerId player2_id;
+    const PlayerId player1_id;
+    const PlayerId player2_id;
 };
 
 /***************************************************************/
@@ -198,6 +201,7 @@ static bool reorderPlayers(PlayerId* id1, PlayerId* id2){
     }
     return false;
 }
+
 static void switchWinner(Winner* winner){
     if (*winner == FIRST_PLAYER){
         *winner = SECOND_PLAYER;
@@ -215,7 +219,7 @@ static PlayerId playerParticipatesInGame(GameKey game_key, PlayerId player_id){
     if (game_key->player2_id == player_id){
         return game_key->player1_id;
     }
-    return 0;
+    return PLAYER_NOT_PARTICIPATES;
 }
 
 static Winner playerGameResult(GameKey game_key, GameData game_data, PlayerId first_player){
@@ -225,6 +229,37 @@ static Winner playerGameResult(GameKey game_key, GameData game_data, PlayerId fi
     return game_data->winner;
 }
 
+static GameData gameGetDataPointer(Map game_map, PlayerId player1_id, PlayerId player2_id){
+    GameKey game_key = createGameKey(player1_id, player2_id);
+    if (!game_key){
+        return NULL;
+    }
+    GameData game_data = mapGet(game_map, game_key);
+    freeGameKey(game_key);
+    
+    if (!game_data){
+        return NULL;
+    }
+    
+    return game_data;
+}
+
+static bool gameCreateKeyDataPair(int play_time, Winner winner, PlayerId player1_id, PlayerId player2_id,
+                                  GameKey* game_key_ptr, GameData* game_data_ptr){
+    if (!game_key_ptr || !game_data_ptr){
+        return false;
+    }
+    *game_key_ptr = createGameKey(player1_id, player2_id);
+    if (!*game_key_ptr){
+        return false;
+    }
+    *game_data_ptr = createGameData(play_time, winner);
+    if (!*game_data_ptr){
+        freeGameKey(*game_key_ptr);
+        return false;
+    }
+    return true;
+}
 
 /********************* Public functions *********************/
 
@@ -256,6 +291,9 @@ bool gameExists(Map game_map, PlayerId player1_id, PlayerId player2_id){
 
 GameResult gameAdd(Map game_map, int play_time, Winner winner,
                    PlayerId player1_id, PlayerId player2_id){
+    if (!game_map){
+        return GAME_NULL_ARGUMENT;
+    }
     if (!playerIdIsValid(player1_id) || !playerIdIsValid(player2_id) ||
         player1_id == player2_id){
         return GAME_INVALID_ID;
@@ -270,13 +308,10 @@ GameResult gameAdd(Map game_map, int play_time, Winner winner,
     if (reorderPlayers(&player1_id, &player2_id)){
         switchWinner(&winner);
     }
-    GameKey game_key = createGameKey(player1_id, player2_id);
-    if (!game_key){
-        return GAME_OUT_OF_MEMORY;
-    }
-    GameData game_data = createGameData(play_time, winner);
-    if (!game_data){
-        freeGameKey(game_key);
+    GameKey game_key;
+    GameData game_data;
+
+    if (!gameCreateKeyDataPair(play_time, winner, player1_id, player2_id, &game_key, &game_data)){
         return GAME_OUT_OF_MEMORY;
     }
     
@@ -341,9 +376,13 @@ bool gameGetDataByPlayerId(Map game_map, PlayerId first_player, PlayerId* second
     
     MAP_FOREACH(GameKey, game_key, game_map){
         *second_player = playerParticipatesInGame(game_key, first_player);
-        if (!*second_player){
+        if (*second_player != PLAYER_NOT_PARTICIPATES){
             GameData game_data = mapGet(game_map, game_key);
             assert(game_data);
+            if (!game_data){
+                freeGameKey(game_key);
+                continue;
+            }
             *winner = playerGameResult(game_key, game_data, first_player);
             *play_time = game_data->play_time;
             
@@ -358,9 +397,37 @@ bool gameGetDataByPlayerId(Map game_map, PlayerId first_player, PlayerId* second
     return false;
 }
 
+GameData gameGetData(Map game_map, PlayerId player1_id, PlayerId player2_id){
+    if (!game_map){
+        return NULL;
+    }
+    GameData data = gameGetDataPointer(game_map, player1_id, player2_id);
+    if (!data){
+        return NULL;
+    }
+    return copyGameData(data);
+}
 
-
-
+GameResult gamePutData(Map player_map, GameData game_data){
+    if (!player_map || !game_data){
+        return GAME_NULL_ARGUMENT;
+    }
+    GameKey game_key = createGameKey(game_data->player1_id, game_data->player2_id);
+    if (!game_key){
+        return GAME_OUT_OF_MEMORY;
+    }
+    MapResult result = mapPut(player_map, game_key, game_data);
+    if (result == MAP_OUT_OF_MEMORY){
+        freeGameKey(game_key);
+        return GAME_OUT_OF_MEMORY;
+    }
+    else if (result == MAP_NULL_ARGUMENT){
+        freeGameKey(game_key);
+        return GAME_NULL_ARGUMENT;
+    }
+    freeGameKey(game_key);
+    return GAME_SUCCESS;
+}
 
 
 

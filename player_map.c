@@ -85,6 +85,7 @@ static PlayerKey createPlayerKey(PlayerId id){
     *player_id = id;
     return player_id;
 }
+
 static bool playerKeyIsValid(PlayerKey player_key){
     if (!player_key || *player_key <= 0){
         return false;
@@ -92,6 +93,7 @@ static bool playerKeyIsValid(PlayerKey player_key){
     return true;
 }
 
+/********************* public functions *********************/
 
 bool playerIdIsValid(PlayerId player_id){
     if (player_id > 0){
@@ -99,6 +101,7 @@ bool playerIdIsValid(PlayerId player_id){
     }
     return false;
 }
+
 bool playerExists(Map player_map, PlayerId player_id){
     assert(player_map);
     if (mapContains(player_map, &player_id)){
@@ -107,15 +110,14 @@ bool playerExists(Map player_map, PlayerId player_id){
     return false;
 }
 
-
 Map playerCreateMap(){
     return mapCreate(copyPlayerData, copyPlayerKey, freePlayerData,
                      freePlayerKey, comparePlayerKey);
 }
+
 void playerDestroyMap(Map player_map){
     mapDestroy(player_map);
 }
-
 
 bool playerExceededGames(Map player_map, PlayerId player_id, int num_of_games){
     assert(player_map);
@@ -128,7 +130,12 @@ bool playerExceededGames(Map player_map, PlayerId player_id, int num_of_games){
 }
 
 PlayerResult playerAdd(Map player_map, PlayerId player_id){
-    assert(player_map);
+    if (!player_map){
+        return PLAYER_NULL_ARGUMENT;
+    }
+    if (playerExists(player_map, player_id)){
+        return PLAYER_SUCCESS;
+    }
     PlayerKey player_key = createPlayerKey(player_id);
     if (!player_key){
         return PLAYER_OUT_OF_MEMORY;
@@ -147,6 +154,7 @@ PlayerResult playerAdd(Map player_map, PlayerId player_id){
     
     return PLAYER_SUCCESS;
 }
+
 PlayerResult playerRemove(Map player_map, PlayerId player_id){
     assert(player_map);
     if (mapContains(player_map, &player_id)){
@@ -173,12 +181,10 @@ double playerGetLevel(Map player_map, PlayerId player_id){
     
 }
 
-
 Map playerGetMapCopy(Map player_map){
     assert(player_map);
     return mapCopy(player_map);
 }
-
 
 PlayerId playerGetMaxLevelAndId(Map player_map, double* max_level, bool remove){
     assert(player_map);
@@ -200,19 +206,141 @@ PlayerId playerGetMaxLevelAndId(Map player_map, double* max_level, bool remove){
     return max_id;
 }
 
-void playerUpdateData(Map player_map, PlayerId first_player, DuelResult result){
+ /*
+PlayerResult playerUpdateData(Map player_map, PlayerId first_player, int play_time, DuelResult result){
     assert(player_map);
-    assert(playerIdIsValid(first_player));
+    if (!player_map){
+        return PLAYER_NULL_ARGUMENT;
+    }
     
-    PlayerData second_player_data = playerGetData(player_map, first_player);
+    PlayerData player_data = playerGetData(player_map, first_player);
+    if (!player_data){
+        return PLAYER_INVALID_ID;
+    }
+    
     if (result == PLAYER_LOST){
-        second_player_data->num_of_loses--;
-        second_player_data->num_of_wins++;
+        player_data->num_of_loses--;
+        
     }
     else if (result == PLAYER_DRAW){
+        player_data->num_of_draws--;
+        player_data->num_of_wins++;
+    }
+    return PLAYER_SUCCESS;
+}
+*/
+
+PlayerData playerGetDataC(Map player_map, PlayerId player_id){
+    if (!player_map){
+        return NULL;
+    }
+    PlayerData data = playerGetData(player_map, player_id);
+    if (!data){
+        return NULL;
+    }
+     return copyPlayerData(data);
+}
+
+PlayerResult playerPutData(Map player_map, PlayerId player_id, PlayerData player_data){
+    if (!player_map){
+        return PLAYER_NULL_ARGUMENT;
+    }
+    
+    MapResult result = mapPut(player_map, &player_id, player_data);
+    if (result == MAP_OUT_OF_MEMORY){
+        return PLAYER_OUT_OF_MEMORY;
+    }
+    else if (result == MAP_NULL_ARGUMENT){
+        return PLAYER_NULL_ARGUMENT;
+    }
+    
+    return PLAYER_SUCCESS;
+}
+
+
+
+PlayerResult playerUpdateDuelResult(Map player_map, PlayerId first_player, PlayerId second_player, int play_time,
+                                    Winner winner, UpdateMode value){
+    if (!player_map){
+        return PLAYER_NULL_ARGUMENT;
+    }
+    if (playerIdIsValid(first_player) && playerIdIsValid(second_player)){
+        return PLAYER_INVALID_ID;
+    }
+    PlayerData first_player_data = playerGetData(player_map, first_player);
+    PlayerData second_player_data = playerGetData(player_map, first_player);
+    
+    if (!first_player_data || !second_player_data){
+        return PLAYER_NOT_EXIST;
+    }
+    
+    first_player_data->num_of_games += value;
+    first_player_data->total_play_time += play_time*value;
+    second_player_data->num_of_games += value;
+    second_player_data->total_play_time += play_time*value;
+    if (winner == FIRST_PLAYER){
+        first_player_data->num_of_wins += value;
+        second_player_data->num_of_loses += value;
+    }
+    else if (winner == SECOND_PLAYER){
+        first_player_data->num_of_loses += value;
+        second_player_data->num_of_wins += value;
+    }
+    else{
+        first_player_data->num_of_draws += value;
+        second_player_data->num_of_draws += value;
+    }
+    
+    return PLAYER_SUCCESS;
+}
+
+
+
+PlayerResult playerChangeDuelResult(Map player_map, PlayerId first_player, PlayerId second_player,
+                                    Winner old_result, Winner new_result){
+    if (!player_map){
+        return PLAYER_NULL_ARGUMENT;
+    }
+    if (playerIdIsValid(first_player) && playerIdIsValid(second_player)){
+        return PLAYER_INVALID_ID;
+    }
+    PlayerData first_player_data = playerGetData(player_map, first_player);
+    PlayerData second_player_data = playerGetData(player_map, first_player);
+    
+    if (!first_player_data || !second_player_data){
+        return PLAYER_NOT_EXIST;
+    }
+    
+    if (old_result == FIRST_PLAYER){
+        first_player_data->num_of_wins--;
+        second_player_data->num_of_loses--;
+    }
+    else if (old_result == SECOND_PLAYER){
+        first_player_data->num_of_loses--;
+        second_player_data->num_of_wins--;
+    }
+    else{
+        first_player_data->num_of_draws--;
         second_player_data->num_of_draws--;
+    }
+    
+    if (new_result == FIRST_PLAYER){
+        first_player_data->num_of_wins++;
+        second_player_data->num_of_loses++;
+    }
+    else if (new_result == SECOND_PLAYER){
+        first_player_data->num_of_loses++;
         second_player_data->num_of_wins++;
     }
+    else{
+        first_player_data->num_of_draws++;
+        second_player_data->num_of_draws++;
+    }
+    
+    return PLAYER_SUCCESS;
+    
+    
+    
 }
 
 

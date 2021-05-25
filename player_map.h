@@ -26,11 +26,16 @@ typedef enum {
 
 
 typedef enum {
-    PLAYER_WON = 1,
-    PLAYER_DRAW = 0,
-    PLAYER_LOST = -1
-}DuelResult ;
+    FIRST_PLAYER,
+    SECOND_PLAYER,
+    DRAW
+} Winner;
 
+typedef enum {
+    PLAYER_WON,
+    PLAYER_LOST,
+    PLAYER_DRAW
+} DuelResult;
 
 typedef enum {
     ADD = 1,
@@ -87,7 +92,22 @@ double playerGetLevel(Map player_map, PlayerId player_id);
 Map playerGetMapCopy(Map player_map);
 
 PlayerId playerGetMaxLevelAndId(Map player_map, double* max_level, bool remove);
+/**
+ *
+ * @param player_map
+ * @param first_player
+ * @param second_player
+ * @param play_time
+ * @param winner
+ * @param value
+ * @return
+ *      PLAYER_NULL_ARGUMENT
+ *      PLAYER_INVALID_ID
+ *      PLAYER_NOT_EXIST
+ *      PLAYER_SUCCESS
+ */
+PlayerResult playerUpdateDuelResult(Map player_map, PlayerId first_player, PlayerId second_player, int play_time,
+                                    Winner winner, UpdateMode value);
 
-void playerUpdateData(Map player_map, PlayerId player_id, DuelResult result);
 
 #endif //CHESS_PLAYER_MAP_H

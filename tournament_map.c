@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include <stdio.h>
 
 #define ID_TOURNAMENT_NOT_EXIST_IN_CHESS -1;
 
@@ -21,6 +22,8 @@ struct tournament_data {
     int num_of_games;
     int total_game_time;
     int longest_game_time;
+    int num_of_players;
+    ///we need to add number of players
 };
 
 
@@ -54,10 +57,6 @@ static TournamentKey createTournamentKey();
 static TournamentData createTournamentData(Location location, int max_games_per_player);
 
 static TournamentData tournamentGet(Map tournament_map, TournamentId tournament_id);
-
-
-
-
 
 
 
@@ -145,9 +144,9 @@ static void freeTournamentData(MapDataElement data) {
     if (!data) {
         return;
     }
-   TournamentData new_data = (TournamentData)data;// is this true?
-    mapDestroy(new_data->game_map);
-    mapDestroy(new_data->player_map);
+    TournamentData new_data = (TournamentData)data;// is this true?
+    gameDestroyMap(new_data->game_map);
+    playerDestroyMap(new_data->player_map);
     free(new_data->location);
     free(data);
 }
@@ -230,6 +229,7 @@ static TournamentData createTournamentData(Location location, int max_games_per_
     tournament_data->max_games_per_player = max_games_per_player;
     tournament_data->has_ended = false;
     tournament_data->num_of_games=0;
+    tournament_data->num_of_players = 0;
     tournament_data->total_game_time=0;
     tournament_data->longest_game_time=0;
     
@@ -247,7 +247,6 @@ static TournamentKey createTournamentKey(TournamentId tournament_id) {
     }
 
     *key = tournament_id;
-
     return key;
 }
 
@@ -285,7 +284,6 @@ bool tournamentEnded(Map tournament_map,TournamentId tournament_id) {
     return false;
 
 }
-
 
 TournamentData tournamentGet(Map tournament_map, TournamentId tournament_id) {
     //is there a need for (!map return NULL etc..) it's checked in mapGet..
@@ -436,7 +434,7 @@ int tournamentGetLongetGame(Map tournament_map, TournamentId tournament_id) {
         count++;
     }
     
-
+    return 0;
 }
 
 bool tournamentIdIsValid(TournamentId id){
@@ -446,50 +444,236 @@ bool tournamentIdIsValid(TournamentId id){
     return false;
 }
 
-
-
-void tournamentPlayerRemove(Map tournament_map, Map chess_player_map, PlayerId first_player){
-    assert(tournament_map && chess_player_map);
+int tournamentNumOfActiveGames(Map tournament_map, TournamentId tournament_id){
+    if (!tournament_map || (!tournamentIdIsValid(tournament_id))) {
+        return 0;
+    }
     
+    Map game_map =  tournamentGetGameMap(tournament_map, tournament_id);
+    if (!game_map){
+        return 0;
+    }
+    return gameGetNumOfGames(game_map);
+}
+
+static bool noTournamentsEnded(Map tournament_map){
+    if (!tournament_map){
+        return true;
+    }
+    bool no_tournament_ended = true;
+    
+    MAP_FOREACH(TournamentKey, tournament_Key, tournament_map){
+        if (tournamentEnded(tournament_map, *tournament_Key)){
+            no_tournament_ended = false;
+        }
+        freeTournamentKey(tournament_Key);
+    }
+    return no_tournament_ended;
+}
+
+TournamentResult tournamentSaveStatistics(Map tournament_map, char* path_file){
+    if (!tournament_map){
+        return TOURNAMENT_NULL_ARGUMENT;
+    }
+    
+    if (noTournamentsEnded(tournament_map)){
+        return TOURNAMENT_NO_TOURNAMENTS_ENDED;
+    }
+    FILE* stream = fopen(path_file, "w");
+    if (!stream){
+        return TOURNAMENT_SAVE_FAILURE;
+    }
     
     MAP_FOREACH(TournamentKey, tournament_Key, tournament_map){
         TournamentData tournament_data = tournamentGet(tournament_map, *tournament_Key);
         assert(tournament_data);
-        Map player_map = tournament_data->player_map;
-        if (playerExists(player_map, first_player)){
+        
+        double average_game_time = 0;
+        if (tournament_data->num_of_games > 0){
+            average_game_time = (double)tournament_data->total_game_time / tournament_data->num_of_games;
+        }
+        fprintf(stream, "%d\n", tournament_data->winner_id);
+        fprintf(stream, "%d\n", tournament_data->longest_game_time);
+        fprintf(stream, "%.2f\n", average_game_time);
+        fprintf(stream, "%s\n", tournament_data->location);
+        fprintf(stream, "%d\n", tournament_data->num_of_games);
+        fprintf(stream, "%d\n", tournament_data->num_of_players);
+        
+        freeTournamentKey(tournament_Key);
+    }
+    
+    fclose(stream);
+}
+
+static TournamentResult updatePlayerDataAfterOpponentQuit(Map player_map, PlayerId player_id, DuelResult game_result){
+    assert(player_map);
+    if (!player_map){
+        return TOURNAMENT_NULL_ARGUMENT;
+    }
+    
+    PlayerData player_data = playerGetData(player_map, player_id);
+    if (!player_data){
+        return TOURNAMENT_INVALID_ID;
+    }
+    if (game_result == PLAYER_LOST){
+        player_data->num_of_loses--;
+        player_data->num_of_wins++;
+    }
+    else if (game_result == PLAYER_DRAW){
+        player_data->num_of_draws--;
+        player_data->num_of_wins++;
+    }
+    return TOURNAMENT_SUCCESS;
+}
+
+void tournamentPlayerRemove(Map tournament_map, Map chess_player_map, PlayerId first_player){
+    assert(tournament_map && chess_player_map);
+    //iterate over all tournaments
+    MAP_FOREACH(TournamentKey, tournament_Key, tournament_map){
+        //get tournament data
+        TournamentData tournament_data = tournamentGet(tournament_map, *tournament_Key);
+        assert(tournament_data);
+        
+        if (tournament_data->has_ended){
+            Map player_map = tournament_data->player_map;///maybe recover from these errors?
             Map game_map = tournament_data->game_map;
-            PlayerId second_player;
-            Winner winner;
-            int play_time;
+            assert(game_map);
+            assert(player_map);
+            if (playerExists(player_map, first_player)){
+                PlayerId second_player;
+                Winner winner;
+                int play_time;
+                //get all games the player participated in
+                while (gameGetDataByPlayerId(game_map, first_player, &second_player, &winner, &play_time, true)) {
+                    if (winner == FIRST_PLAYER) {
+                        updatePlayerDataAfterOpponentQuit(player_map, second_player, PLAYER_LOST);
+                        updatePlayerDataAfterOpponentQuit(chess_player_map, second_player, PLAYER_LOST);
+                    }
+                    else if (winner == DRAW) {
+                        updatePlayerDataAfterOpponentQuit(player_map, second_player, PLAYER_DRAW);
+                        updatePlayerDataAfterOpponentQuit(chess_player_map, second_player, PLAYER_DRAW);
+                    }
+                    gameRemove(game_map, first_player, second_player);
+                }//while
+                playerRemove(player_map, first_player);// remove the player from the tournament
+            }//if (playerExists(player_map, player_id))
             
-            while (gameGetDataByPlayerId(game_map, first_player, &second_player, &winner, &play_time, true)) {
-                if (winner == FIRST_PLAYER) {
-                    playerUpdateData(player_map, second_player, PLAYER_LOST);
-                    playerUpdateData(chess_player_map, second_player, PLAYER_LOST);
-                }
-                else if (winner == DRAW) {
-                    playerUpdateData(player_map, second_player, PLAYER_DRAW);
-                    playerUpdateData(chess_player_map, second_player, PLAYER_DRAW);
-                }
-                gameRemove(game_map, first_player, second_player);
-            }//while
-            playerRemove(player_map, first_player);
-        }//if (playerExists(player_map, player_id))
-        
-        
-        playerRemove(chess_player_map, first_player);
+            playerRemove(chess_player_map, first_player);
+        }
         freeTournamentKey(tournament_Key);
     }//MAP_FOREACH
+}
+
+TournamentResult tournamentRemove(Map tournament_map, TournamentId tournament_id){
+
+}
+
+
+double tournamentGetPlayerAveragePlayTime(Map tournament_map, PlayerId player_id, ){
+    if (!tournament_map){
+        return
+    }
+    
+    
+    
     
     
     
 }
 
+TournamentResult tournamentEnd(){
+
+}
 
 
 
 
+/*
+* @return
+*     CHESS_NULL_ARGUMENT - if chess is NULL.
+*     CHESS_INVALID_ID - if the tournament ID number, either the players or the winner is invalid or both players
+*                        have the same ID number.
+*     CHESS_TOURNAMENT_NOT_EXIST - if the tournament does not exist in the system.
+*     CHESS_TOURNAMENT_ENDED - if the tournament already ended
+*     CHESS_GAME_ALREADY_EXISTS - if there is already a game in the tournament with the same two players
+        *                                  (both were not removed).
+*     CHESS_INVALID_PLAY_TIME - if the play time is negative.
+*     CHESS_EXCEEDED_GAMES - if one of the players played the maximum number of games allowed
+        *     CHESS_SUCCESS - if game was added successfully.
+*/
+static TournamentResult checkValidityBeforeAddingGame(Map tournament_map, int tournament_id, int first_player,
+                                                      int second_player, Winner winner, int play_time){
+    if (!tournament_map){
+        return TOURNAMENT_NULL_ARGUMENT;
+    }
+    if (!tournamentIdIsValid(tournament_id) || !playerIdIsValid(first_player) ||
+        !playerIdIsValid(second_player) || first_player == second_player){
+        return TOURNAMENT_INVALID_ID;
+    }
+    
+    TournamentData tournament_data = tournamentGet(tournament_map, tournament_id);
+    if(!tournament_data){
+        return TOURNAMENT_TOURNAMENT_NOT_EXIST;
+    }
+    
+    Map player_map = tournament_data->player_map;
+    Map game_map = tournament_data->game_map;
+    assert(game_map);
+    assert(player_map);
+    
+    if (tournamentEnded(tournament_map, tournament_id)){
+        return TOURNAMENT_TOURNAMENT_ENDED;
+    }
+    
+    if (gameExists(game_map, first_player, second_player)){
+        return TOURNAMENT_GAME_ALREADY_EXISTS;
+    }
+    if (!playTimeIsValid(play_time)){
+        return TOURNAMENT_INVALID_PLAY_TIME;
+    }
+    int max_games = tournamentGetMaxGames(tournament_map, tournament_id);
+    if (playerExceededGames(player_map, first_player, max_games) ||
+        playerExceededGames(player_map, second_player, max_games)){
+        
+        return TOURNAMENT_EXCEEDED_GAMES;
+    }
+    return TOURNAMENT_SUCCESS;
+}
 
 
 
+TournamentResult tournamentAddGame(Map tournament_map, TournamentId tournament_id, int first_player,
+                                   int second_player, Winner winner, int play_time){
+    
+    TournamentResult result = checkValidityBeforeAddingGame(tournament_map, tournament_id, first_player, second_player,
+                                                            winner, play_time);
+    if (result != TOURNAMENT_SUCCESS){
+        return result;
+    }
+    
+    TournamentData tournament_data = tournamentGet(tournament_map, tournament_id);
+    Map player_map = tournament_data->player_map;
+    Map game_map = tournament_data->game_map;
+    //no checks since all other errors were already checked
+    if (gameAdd(game_map, play_time, winner, first_player, second_player) != GAME_SUCCESS){
+        return TOURNAMENT_OUT_OF_MEMORY;
+    }
+    
+    // if player exists nothing happens
+    if (playerAdd(player_map, first_player) != PLAYER_SUCCESS){
+        return TOURNAMENT_OUT_OF_MEMORY;
+    }
+    if (playerAdd(player_map, second_player) != PLAYER_SUCCESS){
+        return TOURNAMENT_OUT_OF_MEMORY;
+    }
+    
+    playerUpdateDuelResult(player_map, first_player, second_player, play_time, winner, ADD);
+    
+    tournament_data->num_of_games++;
+    tournament_data->total_game_time += play_time;
+    if (play_time > tournament_data->longest_game_time){
+        tournament_data->longest_game_time = play_time;
+    }
 
+    return TOURNAMENT_SUCCESS;
+}
