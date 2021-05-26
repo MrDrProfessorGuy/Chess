@@ -1,6 +1,9 @@
 #ifndef _CHESSSYSTEM_H
 #define _CHESSSYSTEM_H
 
+#include <stdio.h>
+
+
 
 typedef enum {
     CHESS_OUT_OF_MEMORY,

@@ -5,6 +5,14 @@
 typedef PlayerId* PlayerKey;// Key = &player_id
 
 
+struct player_data{
+    int num_of_games; // used to calculate averages when needed
+    int num_of_wins; // used to calculate Level
+    int num_of_loses; // used to calculate Level
+    int num_of_draws; // used to calculate Level
+    int total_play_time; // used to calculate average playtime
+};
+
 /********************* static functions *********************/
 static MapKeyElement copyPlayerKey(MapKeyElement player_key);
 static MapDataElement copyPlayerData(MapDataElement data);
@@ -181,7 +189,7 @@ double playerGetLevel(Map player_map, PlayerId player_id){
     
 }
 
-Map playerGetMapCopy(Map player_map){
+Map playerMapCopy(Map player_map){
     assert(player_map);
     return mapCopy(player_map);
 }
@@ -200,7 +208,7 @@ PlayerId playerGetMaxLevelAndId(Map player_map, double* max_level, bool remove){
         }
         freePlayerKey(player_key);
     }
-    if (remove){
+    if (remove && max_level > 0){
         playerRemove(player_map, max_id);
     }
     return max_id;
@@ -341,6 +349,156 @@ PlayerResult playerChangeDuelResult(Map player_map, PlayerId first_player, Playe
     
     
     
+}
+
+
+bool playerUpdateData(PlayerData player_data1, PlayerData player_data2, UpdateMode value){
+    if (!player_data1 || !player_data2){
+        return false;
+    }
+    
+    player_data1->num_of_games += value * player_data2->num_of_games;
+    player_data1->total_play_time += value * player_data2->total_play_time;
+    player_data1->num_of_wins += value * player_data2->num_of_wins;
+    player_data1->num_of_loses += value * player_data2->num_of_loses;
+    player_data1->num_of_draws += value * player_data2->num_of_draws;
+    
+    return true;
+}
+
+
+
+PlayerResult playerMapUpdateStatistics(Map main_map, Map update_map, bool destroy, UpdateMode value){
+    if (!main_map || !update_map){
+        return PLAYER_NULL_ARGUMENT;
+    }
+    
+    MAP_FOREACH(PlayerKey, player_key, update_map){
+        PlayerData update_data = playerGetData(update_map, *player_key);
+        assert(update_data);
+        
+        PlayerData player_data = playerGetData(main_map, *player_key);
+        if (!player_data){
+            freePlayerKey(player_key);
+            continue;
+        }
+        
+        playerUpdateData(player_data, update_data, value);
+        freePlayerKey(player_key);
+    }
+    
+    if (destroy){
+        playerDestroyMap(update_map);
+    }
+    return PLAYER_SUCCESS;
+}
+
+
+PlayerResult updatePlayerDataAfterOpponentQuit(Map player_map, PlayerId player_id, DuelResult game_result){
+    assert(player_map);
+    if (!player_map){
+        return PLAYER_NULL_ARGUMENT;
+    }
+    
+    PlayerData player_data = playerGetData(player_map, player_id);
+    if (!player_data){
+        return PLAYER_INVALID_ID;
+    }
+    if (game_result == PLAYER_LOST){
+        player_data->num_of_loses--;
+        player_data->num_of_wins++;
+    }
+    else if (game_result == PLAYER_DRAW){
+        player_data->num_of_draws--;
+        player_data->num_of_wins++;
+    }
+    return PLAYER_SUCCESS;
+}
+
+
+
+/**
+*   The winner of the tournament is the player with the highest score:
+*   player_score = ( num_of_wins * 2 + num_of_draws * 1 ) / ( num_of_games_of_player )
+*   If two players have the same score, the player with least losses will be chosen.
+*   If two players have the same number of losses, the player with the most wins will be chosen
+*   If two players have the same number of wins and losses,
+*   the player with smaller id will be chosen.
+*   Once the tournament is over, no games can be added for that tournament.
+*
+ */
+
+int playerCalculateScore(PlayerData player_data){
+    if (!player_data){
+        return 0;
+    }
+    
+    return (2*player_data->num_of_wins + player_data->num_of_draws);
+}
+
+PlayerId playerCalculateWinner(Map player_map){
+    
+    if (!player_map){
+        return 0;
+    }
+    
+    Map player_map_copy = playerMapCopy(player_map);
+    if (!player_map_copy){
+        return 0;
+    }
+    
+    PlayerKey winner_key = mapGetFirst(player_map_copy);///remember to free
+    PlayerData winner_data = playerGetData(player_map_copy, *winner_key);
+    int winner_score = playerCalculateScore(winner_data);
+    
+    MAP_FOREACH(PlayerKey, player_key, player_map_copy){
+        PlayerData player_data = playerGetData(player_map_copy, *player_key);
+        int player_score = playerCalculateScore(player_data);
+        if (player_score >= winner_score){
+            if (player_score == winner_score){
+                if (player_data->num_of_loses > winner_data->num_of_loses){
+                    freePlayerKey(player_key);
+                    continue;
+                }
+                else if (player_data->num_of_loses == winner_data->num_of_loses){
+                    // <= since if they are equal the winner is by smallest id, and winner_id < player_id
+                    // from the implementation of Map
+                    if (player_data->num_of_wins <= winner_data->num_of_wins){
+                        freePlayerKey(player_key);
+                        continue;
+                    }//if (player_data->num_of_wins <= winner_data->num_of_wins)
+                }//else if (player_data->num_of_loses == winner_data->num_of_loses)
+            }//if (player_data->num_of_loses > winner_data->num_of_loses)
+            freePlayerKey(winner_key);
+            winner_key = player_key;
+            winner_data = playerGetData(player_map_copy, *winner_key);
+            winner_score = player_score;
+            continue;
+        }// if (player_score == winner_score)
+        
+        freePlayerKey(player_key);
+    }
+    
+    PlayerId winner_id = *winner_key;
+    freePlayerKey(winner_key);
+    return winner_id;
+}
+
+
+PlayerResult playerCalculateAveragePlayTime(Map player_map, PlayerId player_id, double* play_time){
+    if (!player_map){
+        return PLAYER_NULL_ARGUMENT;
+    }
+    if (!playerIdIsValid(player_id)){
+        return PLAYER_INVALID_ID;
+    }
+    PlayerData player_data = playerGetData(player_map, player_id);
+    if (!player_data){
+        return PLAYER_OUT_OF_MEMORY;
+    }
+    
+    *play_time = (double)(player_data->total_play_time)/player_data->num_of_games;
+    return PLAYER_SUCCESS;
 }
 
 

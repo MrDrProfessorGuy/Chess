@@ -25,11 +25,13 @@ typedef enum {
 } PlayerResult ;
 
 
+#ifndef _CHESSSYSTEM_H
 typedef enum {
     FIRST_PLAYER,
     SECOND_PLAYER,
     DRAW
 } Winner;
+#endif
 
 typedef enum {
     PLAYER_WON,
@@ -42,13 +44,7 @@ typedef enum {
     UNDO = -1
 } UpdateMode;
 
-struct player_data{
-    int num_of_games; // used to calculate averages when needed
-    int num_of_wins; // used to calculate Level
-    int num_of_loses; // used to calculate Level
-    int num_of_draws; // used to calculate Level
-    int total_play_time; // used to calculate average playtime
-};
+
 
 Map playerCreateMap();
 void playerDestroyMap(Map player_map);
@@ -89,7 +85,7 @@ PlayerResult playerRemove(Map player_map, PlayerId player_id);
 
 double playerGetLevel(Map player_map, PlayerId player_id);
 
-Map playerGetMapCopy(Map player_map);
+Map playerMapCopy(Map player_map);
 
 PlayerId playerGetMaxLevelAndId(Map player_map, double* max_level, bool remove);
 /**
@@ -108,6 +104,16 @@ PlayerId playerGetMaxLevelAndId(Map player_map, double* max_level, bool remove);
  */
 PlayerResult playerUpdateDuelResult(Map player_map, PlayerId first_player, PlayerId second_player, int play_time,
                                     Winner winner, UpdateMode value);
+
+PlayerResult playerMapUpdateStatistics(Map main_map, Map update_map, bool destroy, UpdateMode value);
+
+PlayerResult updatePlayerDataAfterOpponentQuit(Map player_map, PlayerId player_id, DuelResult game_result);
+
+int playerCalculateScore(PlayerData player_data);
+
+PlayerId playerCalculateWinner(Map player_map);
+
+PlayerResult playerCalculateAveragePlayTime(Map player_map, PlayerId player_id, double* play_time);
 
 
 #endif //CHESS_PLAYER_MAP_H

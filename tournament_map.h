@@ -21,24 +21,7 @@ typedef enum {
     TOURNAMENT_SAVE_FAILURE,
     TOURNAMENT_SUCCESS
 } TournamentResult ;
-typedef enum {
-    CHESS_OUT_OF_MEMORY,
-    CHESS_NULL_ARGUMENT,
-    CHESS_INVALID_ID,
-    CHESS_INVALID_LOCATION,
-    CHESS_INVALID_MAX_GAMES,
-    CHESS_TOURNAMENT_ALREADY_EXISTS,
-    CHESS_TOURNAMENT_NOT_EXIST,
-    CHESS_GAME_ALREADY_EXISTS,
-    CHESS_INVALID_PLAY_TIME,
-    CHESS_EXCEEDED_GAMES,
-    CHESS_PLAYER_NOT_EXIST,
-    CHESS_TOURNAMENT_ENDED,
-    CHESS_NO_TOURNAMENTS_ENDED,
-    CHESS_NO_GAMES,
-    CHESS_SAVE_FAILURE,
-    CHESS_SUCCESS
-} ChessResult ;
+
 typedef int TournamentId;
 typedef int PlayerId;
 typedef char* Location;
@@ -52,6 +35,8 @@ void tournamentDestroy(Map tournament);
 Map tournamentCopy(Map tournament);
 TournamentResult tournamentAdd(Map tournament_map, int tournament_id,
                                int max_games_per_player, const char* tournament_location);
+TournamentResult tournamentRemove(Map tournament_map, TournamentId tournament_id);
+
 
 bool tournamentEnded(Map tournament_map, TournamentId tournament_id);
 int tournamentGetMaxGames(Map tournament_map, TournamentId tournament_id);
@@ -63,13 +48,17 @@ Map tournamentGetGameMap(Map tournament_map, TournamentId tournament_id);
 bool tournamentIdIsValid(TournamentId id);
 bool tournamentLocationIsValid(const char* location);
 
-void tournamentPlayerRemove(Map tournament_map, Map chess_player_map, PlayerId first_player);
+void tournamentPlayerRemove(Map tournament_map, Map player_statistics_map, PlayerId first_player);
 
 
 int tournamentNumOfActiveGames(Map tournament_map, TournamentId tournament_id);
 TournamentResult tournamentSaveStatistics(Map tournament_map, char* path_file);
 TournamentResult tournamentUpdateStatistics(Map tournament_map, TournamentId tournament_id,
                                             int play_time,int new_players);
+
+TournamentResult tournamentEnd(Map tournament_map, TournamentId tournament_id);
+
+
 
 
 #endif //TOURNAMENT_MAP_H

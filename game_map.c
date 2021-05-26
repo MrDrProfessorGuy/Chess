@@ -17,8 +17,8 @@ struct game_key{
 struct game_data{
     int play_time;
     Winner winner;
-    const PlayerId player1_id;
-    const PlayerId player2_id;
+    //const PlayerId player1_id;
+    //const PlayerId player2_id;
 };
 
 /***************************************************************/
@@ -66,7 +66,7 @@ static bool playerIdIsValid(PlayerId player_id);
  *      false - if the given id's were already in the correct order
  */
 static bool reorderPlayers(PlayerId* id1, PlayerId* id2);
-static void switchWinner(Winner* winner);
+static void switchWinner(int* winner);
 static PlayerId playerParticipatesInGame(GameKey game_key, PlayerId player_id);
 static Winner playerGameResult(GameKey game_key, GameData game_data, PlayerId first_player);
 
@@ -202,7 +202,7 @@ static bool reorderPlayers(PlayerId* id1, PlayerId* id2){
     return false;
 }
 
-static void switchWinner(Winner* winner){
+static void switchWinner(int* winner){
     if (*winner == FIRST_PLAYER){
         *winner = SECOND_PLAYER;
     }
@@ -335,7 +335,7 @@ GameResult gameRemove(Map game_map, PlayerId player1_id, PlayerId player2_id){
     }
     
     // game_map and game_key != NULL
-    // so mapRemove will return NOT_EXIST OR it will return SUCCESS
+    // so mapRemove will return NOT_EXIST or SUCCESS
     // we should return SUCCESS in both cases
     mapRemove(game_map, game_key);
     freeGameKey(game_key);
@@ -371,7 +371,7 @@ bool gameGetSecondPlayerId(Map game_map, PlayerId player_id, PlayerId* second_pl
 }
 
 bool gameGetDataByPlayerId(Map game_map, PlayerId first_player, PlayerId* second_player,
-                                 Winner* winner, int* play_time, bool remove){
+                                 int* winner, int* play_time, bool remove){
     assert(game_map);
     
     MAP_FOREACH(GameKey, game_key, game_map){
@@ -397,6 +397,7 @@ bool gameGetDataByPlayerId(Map game_map, PlayerId first_player, PlayerId* second
     return false;
 }
 
+/*
 GameData gameGetData(Map game_map, PlayerId player1_id, PlayerId player2_id){
     if (!game_map){
         return NULL;
@@ -429,7 +430,7 @@ GameResult gamePutData(Map player_map, GameData game_data){
     return GAME_SUCCESS;
 }
 
-
+*/
 
 
 

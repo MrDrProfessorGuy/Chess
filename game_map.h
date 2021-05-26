@@ -21,11 +21,15 @@ typedef enum {// make sure no changes need to be done to this result enum
     GAME_SUCCESS
 } GameResult ;
 
+#ifndef _CHESSSYSTEM_H
+
 typedef enum {
     FIRST_PLAYER,
     SECOND_PLAYER,
     DRAW
 } Winner;
+#endif
+
 
 
 typedef int PlayerId;
@@ -86,7 +90,7 @@ GameResult gameRemoveAllPlayerParticipatedGames(Map game_map, PlayerId player_id
  * @return
  */
 bool gameGetDataByPlayerId(Map game_map, PlayerId first_player, PlayerId* second_player,
-                           Winner* winner, int* play_time, bool remove);
+                           int* winner, int* play_time, bool remove);
 
 int gameGetNumOfGames(Map game_map);
 

@@ -266,6 +266,21 @@ void tournamentDestroy(Map tournament_map) {
     mapDestroy(tournament_map);
 }
 
+TournamentResult tournamentRemove(Map tournament_map, TournamentId tournament_id){
+    if (!tournament_map){
+        return TOURNAMENT_NULL_ARGUMENT;
+    }
+    if (!tournamentIdIsValid(tournament_id)){
+        return TOURNAMENT_INVALID_ID;
+    }
+
+    if (mapRemove(tournament_map, &tournament_id) != MAP_SUCCESS){
+        return TOURNAMENT_TOURNAMENT_NOT_EXIST;
+    }
+    
+    return TOURNAMENT_SUCCESS;
+}
+
 Map tournamentCopy(Map tournament_map) {
     
     return mapCopy(tournament_map);
@@ -519,29 +534,10 @@ TournamentResult tournamentSaveStatistics(Map tournament_map, char* path_file){
     return TOURNAMENT_SUCCESS;
 }
 
-static TournamentResult updatePlayerDataAfterOpponentQuit(Map player_map, PlayerId player_id, DuelResult game_result){
-    assert(player_map);
-    if (!player_map){
-        return TOURNAMENT_NULL_ARGUMENT;
-    }
-    
-    PlayerData player_data = playerGetData(player_map, player_id);
-    if (!player_data){
-        return TOURNAMENT_INVALID_ID;
-    }
-    if (game_result == PLAYER_LOST){
-        player_data->num_of_loses--;
-        player_data->num_of_wins++;
-    }
-    else if (game_result == PLAYER_DRAW){
-        player_data->num_of_draws--;
-        player_data->num_of_wins++;
-    }
-    return TOURNAMENT_SUCCESS;
-}
 
-void tournamentPlayerRemove(Map tournament_map, Map chess_player_map, PlayerId first_player){
-    assert(tournament_map && chess_player_map);
+
+void tournamentPlayerRemove(Map tournament_map, Map player_statistics_map, PlayerId first_player){
+    assert(tournament_map && player_statistics_map);
     //iterate over all tournaments
     MAP_FOREACH(TournamentKey, tournament_Key, tournament_map){
         //get tournament data
@@ -555,39 +551,29 @@ void tournamentPlayerRemove(Map tournament_map, Map chess_player_map, PlayerId f
             assert(player_map);
             if (playerExists(player_map, first_player)){
                 PlayerId second_player;
-                Winner winner;
+                int winner;
                 int play_time;
                 //get all games the player participated in
                 while (gameGetDataByPlayerId(game_map, first_player, &second_player, &winner, &play_time, true)) {
                     if (winner == FIRST_PLAYER) {
                         updatePlayerDataAfterOpponentQuit(player_map, second_player, PLAYER_LOST);
-                        updatePlayerDataAfterOpponentQuit(chess_player_map, second_player, PLAYER_LOST);
+                        updatePlayerDataAfterOpponentQuit(player_statistics_map, second_player, PLAYER_LOST);
                     }
                     else if (winner == DRAW) {
                         updatePlayerDataAfterOpponentQuit(player_map, second_player, PLAYER_DRAW);
-                        updatePlayerDataAfterOpponentQuit(chess_player_map, second_player, PLAYER_DRAW);
+                        updatePlayerDataAfterOpponentQuit(player_statistics_map, second_player, PLAYER_DRAW);
                     }
                     gameRemove(game_map, first_player, second_player);
                 }//while
                 playerRemove(player_map, first_player);// remove the player from the tournament
             }//if (playerExists(player_map, player_id))
             
-            playerRemove(chess_player_map, first_player);
+            playerRemove(player_statistics_map, first_player);
         }
         freeTournamentKey(tournament_Key);
     }//MAP_FOREACH
 }
 
-TournamentResult tournamentRemove(Map tournament_map, TournamentId tournament_id){
-
-
-
-
-
-
-
-
-}
 
 TournamentResult tournamentAdd(Map tournament_map, int tournament_id,
                                     int max_games_per_player, const char* tournament_location){
@@ -626,26 +612,60 @@ TournamentResult tournamentAdd(Map tournament_map, int tournament_id,
     return TOURNAMENT_SUCCESS;
 }
 
+/**
+ * chessEndTournament: The function will end the tournament if it has at least one game and
+ *                     calculate the id of the winner.
+ *                     The winner of the tournament is the player with the highest score:
+ *                     player_score = ( num_of_wins * 2 + num_of_draws * 1 ) / ( num_of_games_of_player )
+ *                     If two players have the same score, the player with least losses will be chosen.
+ *                     If two players have the same number of losses, the player with the most wins will be chosen
+ *                     If two players have the same number of wins and losses,
+ *                     the player with smaller id will be chosen.
+ *                     Once the tournament is over, no games can be added for that tournament.
+ *
+ * @param tournament_map -
+ * @param tournament_id - the tournament id. Must be positive, and unique.
+ *
+ * @return
+ *     CHESS_NULL_ARGUMENT - if chess is NULL.
+ *     CHESS_INVALID_ID - if the tournament ID number is invalid.
+ *     CHESS_TOURNAMENT_NOT_EXIST - if the tournament does not exist in the system.
+ *     CHESS_TOURNAMENT_ENDED - if the tournament already ended
+ *     CHESS_N0_GAMES - if the tournament does not have any games.
+ *     CHESS_SUCCESS - if tournament was ended successfully.
+ */
+TournamentResult tournamentEnd(Map tournament_map, TournamentId tournament_id){
 
-double tournamentGetPlayerAveragePlayTime(Map tournament_map, PlayerId player_id){
     if (!tournament_map){
-        return
+        return TOURNAMENT_NULL_ARGUMENT;
+    }
+    if (!tournamentIdIsValid(tournament_id)){
+        return TOURNAMENT_INVALID_ID;
+    }
+    TournamentData tournament_data = tournamentGet(tournament_map, tournament_id);
+    if (!tournament_data){
+        return TOURNAMENT_TOURNAMENT_NOT_EXIST;
+    }
+    if (tournamentEnded(tournament_map, tournament_id)){
+        return TOURNAMENT_TOURNAMENT_ENDED;
+    }
+    assert(tournament_data->game_map);
+    if (gameGetNumOfGames(tournament_data->game_map) <= 0){
+        return TOURNAMENT_NO_GAMES;
     }
     
+    PlayerId winner_id = playerCalculateWinner(tournament_data->player_map);
+    assert(playerIdIsValid(winner_id));
     
-    
-    
-    
-    
+    tournament_data->has_ended = true;
+    tournament_data->winner_id = winner_id;
+    return TOURNAMENT_SUCCESS;
 }
 
-TournamentResult tournamentEnd(){
-
-}
 
 bool tournamentLocationIsValid(const char* location){
     assert(location);
-    int len = strlen(location);
+    int len = (int)strlen(location);
     
     if ('A' <= location[0] && location[0] <= 'Z'){
         for (int letter = 1; letter < len; letter++) {
