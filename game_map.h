@@ -21,18 +21,25 @@ typedef enum {// make sure no changes need to be done to this result enum
     GAME_SUCCESS
 } GameResult ;
 
-#ifndef _CHESSSYSTEM_H
 
+
+#ifndef _CHESSSYSTEM_H
+#ifndef CHESS_PLAYER_MAP_H
 typedef enum {
     FIRST_PLAYER,
     SECOND_PLAYER,
     DRAW
 } Winner;
 #endif
+#endif
 
-
-
+#ifndef TOURNAMENT_MAP_H
+#ifndef CHESS_PLAYER_MAP_H
 typedef int PlayerId;
+#endif
+#endif
+
+
 
 Map gameCreateMap();
 void gameDestroyMap(Map game_map);

@@ -1,6 +1,6 @@
 #include "tournament_map.h"
-#include "game_map.h"
 #include "player_map.h"
+#include "game_map.h"
 #include <assert.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -9,7 +9,7 @@
 
 
 typedef TournamentId* TournamentKey;
-typedef struct tournament_data* TournamentData;
+
 
 struct tournament_data {
     Location location;
@@ -23,10 +23,6 @@ struct tournament_data {
     int longest_game_time;
     int num_of_players;
 };
-
-
-
-
 
 
 /*Element copyInt(Element element) {
@@ -57,8 +53,6 @@ static int compareTournamentKey(MapKeyElement key1, MapKeyElement key2);
 static TournamentKey createTournamentKey();
 static TournamentData createTournamentData(const char* location, int max_games_per_player);
 
-static TournamentData tournamentGet(Map tournament_map, TournamentId tournament_id);
-
 
 
 
@@ -77,7 +71,7 @@ static MapDataElement copyTournamentData(MapDataElement data) {
         return NULL;
     }
 
-    Map game_map_copy = mapCopy(((TournamentData)data)->game_map);  
+    Map game_map_copy = mapCopy(((TournamentData)data)->game_map);
     if (!game_map_copy) {
         freeTournamentData(data_copy);
         return NULL;
@@ -92,24 +86,28 @@ static MapDataElement copyTournamentData(MapDataElement data) {
     //we do not want to intialize tournament_data_copy->game_map= NULL; in TournamentDatacreate 
     // because when we add games to the map we want it to start with deme node
     //same goes for player_map_copy  
-    mapDestroy(data_copy->game_map);
-    data_copy->player_map = game_map_copy;
+    ///mapDestroy(data_copy->game_map);
+    ///data_copy->player_map = game_map_copy;
+    data_copy->game_map = game_map_copy;
 
-
-    Map player_map_copy = mapCopy(((TournamentData)data)->player_map);
+    ///Map player_map_copy = mapCopy(((TournamentData)data)->player_map);
+    Map player_map_copy = playerCreateMap();
     if (!player_map_copy) {
+        gameDestroyMap(game_map_copy);///added
         freeTournamentData(data_copy);
-        //mapDestroy(game_map_copy);
+        //
         return NULL;
     }
 
     //look at the previous note
-    mapDestroy(data_copy->player_map);
+    ///mapDestroy(data_copy->player_map);
     data_copy->player_map = player_map_copy;
 
     //is malloc and all needed? or strcpy(tournament_data_copy->location, tournament_data->location) enough?
     Location location_copy = malloc(sizeof(strlen(((TournamentData)data)->location) + 1));/// can discard const?
     if (!location_copy) {
+        gameDestroyMap(game_map_copy);///added
+        playerDestroyMap(player_map_copy);///added
         freeTournamentData(data_copy);
         //mapDestroy(game_map_copy);
         //mapDestroy(player_map_copy);
@@ -172,8 +170,54 @@ static int compareTournamentKey(MapKeyElement key1, MapKeyElement key2) {
 
 /***************************************************************/
 /********************* helping Tournament functions *********************/
-
 static TournamentData createTournamentData(const char* location, int max_games_per_player){
+    if (!location){///added
+        return NULL;
+    }
+    TournamentData tournament_data = malloc(sizeof(*tournament_data));
+    if (!tournament_data) {
+        return NULL;
+    }
+    //change to mapGameCreate
+    tournament_data->game_map = gameCreateMap();
+    
+    if (!tournament_data->game_map) {
+        freeTournamentData(tournament_data);
+        return NULL;
+    }
+    //here we already have a game_map with deme node and tournament allocated
+    
+    //change to mapPlayerCreate
+    tournament_data->player_map = playerCreateMap();
+    if (!tournament_data->player_map) {
+        freeTournamentData(tournament_data);
+        return NULL;
+    }
+    //here we already have a game_map with deme node and player_map with deme node and tournament allocated
+    
+    tournament_data->location = malloc(sizeof(strlen(location) + 1));//make sure this allocation is needed
+    strcpy(tournament_data->location, location);
+    if (!tournament_data->location) {
+        freeTournamentData(tournament_data);
+        return NULL;
+    }
+    
+    tournament_data->winner_id = 0;
+    
+    tournament_data->max_games_per_player = max_games_per_player;
+    tournament_data->has_ended = false;
+    tournament_data->num_of_games=0;
+    tournament_data->num_of_players = 0;
+    tournament_data->total_game_time=0;
+    tournament_data->longest_game_time=0;
+    
+    return tournament_data;
+}
+/*
+static TournamentData createTournamentData2(const char* location, int max_games_per_player){
+    if (!location){///added
+        return NULL;
+    }
     TournamentData tournament_data = malloc(sizeof(*tournament_data));
     if (!tournament_data) {
         return NULL;
@@ -190,8 +234,9 @@ static TournamentData createTournamentData(const char* location, int max_games_p
     //change to mapPlayerCreate
     Map player_map = playerCreateMap();
     if (!player_map) {
+        gameDestroyMap(game_map);///added
         free(tournament_data);
-        mapDestroy(game_map);
+        //mapDestroy(game_map);
         return NULL;
     }
     //here we already have a game_map with deme node and player_map with deme node and tournament allocated
@@ -213,7 +258,7 @@ static TournamentData createTournamentData(const char* location, int max_games_p
     //here we already have two maps with deme node and location intilized and tournament allocated
 
     //no need I guess? 
-    /*PlayerId tournament_winner = mallloc(sizeof(strlen(****) + 1));
+    PlayerId tournament_winner = mallloc(sizeof(strlen(****) + 1));
 
     if (!tournament_winner) {
         free(tournament);
@@ -222,7 +267,7 @@ static TournamentData createTournamentData(const char* location, int max_games_p
         free(tournament_location);//enough?
         return NULL;
     }
-    tournament->winner = tournament_winner;*/
+    tournament->winner = tournament_winner;*
     //tournament_data->winner = 0;//good? or Winner[0]? as enum..
 
     tournament_data->winner_id = 0;
@@ -236,7 +281,7 @@ static TournamentData createTournamentData(const char* location, int max_games_p
     
     return tournament_data;
 }
-
+*/
 static TournamentKey createTournamentKey(TournamentId tournament_id) {
     if (!(tournamentIdIsValid(tournament_id))) {
         return NULL;
@@ -722,7 +767,8 @@ static TournamentResult checkValidityBeforeAddingGame(Map tournament_map, int to
     if (!playTimeIsValid(play_time)){
         return TOURNAMENT_INVALID_PLAY_TIME;
     }
-    int max_games = tournamentGetMaxGames(tournament_map, tournament_id);
+    int max_games = 0;
+    tournamentGetMaxGamesPerPlayer(tournament_map, tournament_id, &max_games);
     if (playerExceededGames(player_map, first_player, max_games) ||
         playerExceededGames(player_map, second_player, max_games)){
         
@@ -768,9 +814,6 @@ TournamentResult tournamentAddGame(Map tournament_map, TournamentId tournament_i
 
     return TOURNAMENT_SUCCESS;
 }
-
-
-
 
 
 TournamentResult tournamentUpdateStatistics(Map tournament_map, TournamentId tournament_id,

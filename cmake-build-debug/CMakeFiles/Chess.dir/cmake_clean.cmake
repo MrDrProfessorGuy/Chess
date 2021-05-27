@@ -1,6 +1,7 @@
 file(REMOVE_RECURSE
   "CMakeFiles/Chess.dir/chessSystem.c.o"
   "CMakeFiles/Chess.dir/game_map.c.o"
+  "CMakeFiles/Chess.dir/map.c.o"
   "CMakeFiles/Chess.dir/player_map.c.o"
   "CMakeFiles/Chess.dir/tests/chessSystemTestsExample.c.o"
   "CMakeFiles/Chess.dir/tournament_map.c.o"

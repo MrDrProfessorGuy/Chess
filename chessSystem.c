@@ -156,7 +156,6 @@ static ChessResult checkValidityForAddGame(ChessSystem chess, int tournament_id,
     Map tournament_map = chess->tournament_map;
     assert(tournament_map);
     Map tournament_player_map = tournamentGetPlayerMap(tournament_map, tournament_id);
-    assert(tournament_player_map);
     Map tournament_game_map = tournamentGetGameMap(tournament_map, tournament_id);
     
     if(!tournament_game_map){
@@ -172,7 +171,8 @@ static ChessResult checkValidityForAddGame(ChessSystem chess, int tournament_id,
     if (!playTimeIsValid(play_time)){
         return CHESS_INVALID_PLAY_TIME;
     }
-    int max_games = tournamentGetMaxGames(tournament_map, tournament_id);
+    int max_games = 0;
+    tournamentGetMaxGamesPerPlayer(tournament_map, tournament_id, &max_games);
     if (playerExceededGames(tournament_player_map, first_player, max_games) ||
         playerExceededGames(tournament_player_map, second_player, max_games)){
         

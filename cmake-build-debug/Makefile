@@ -197,6 +197,33 @@ game_map.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Chess.dir/build.make CMakeFiles/Chess.dir/game_map.c.s
 .PHONY : game_map.c.s
 
+map.o: map.c.o
+
+.PHONY : map.o
+
+# target to build an object file
+map.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Chess.dir/build.make CMakeFiles/Chess.dir/map.c.o
+.PHONY : map.c.o
+
+map.i: map.c.i
+
+.PHONY : map.i
+
+# target to preprocess a source file
+map.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Chess.dir/build.make CMakeFiles/Chess.dir/map.c.i
+.PHONY : map.c.i
+
+map.s: map.c.s
+
+.PHONY : map.s
+
+# target to generate assembly for a file
+map.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Chess.dir/build.make CMakeFiles/Chess.dir/map.c.s
+.PHONY : map.c.s
+
 player_map.o: player_map.c.o
 
 .PHONY : player_map.o
@@ -293,6 +320,9 @@ help:
 	@echo "... game_map.o"
 	@echo "... game_map.i"
 	@echo "... game_map.s"
+	@echo "... map.o"
+	@echo "... map.i"
+	@echo "... map.s"
 	@echo "... player_map.o"
 	@echo "... player_map.i"
 	@echo "... player_map.s"

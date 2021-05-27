@@ -3,12 +3,17 @@
 
 CMakeFiles/Chess.dir/chessSystem.c.o: ../chessSystem.c
 CMakeFiles/Chess.dir/chessSystem.c.o: ../chessSystem.h
+CMakeFiles/Chess.dir/chessSystem.c.o: ../game_map.h
 CMakeFiles/Chess.dir/chessSystem.c.o: ../map.h
+CMakeFiles/Chess.dir/chessSystem.c.o: ../player_map.h
 CMakeFiles/Chess.dir/chessSystem.c.o: ../tournament_map.h
 
 CMakeFiles/Chess.dir/game_map.c.o: ../game_map.c
 CMakeFiles/Chess.dir/game_map.c.o: ../game_map.h
 CMakeFiles/Chess.dir/game_map.c.o: ../map.h
+
+CMakeFiles/Chess.dir/map.c.o: ../map.c
+CMakeFiles/Chess.dir/map.c.o: ../map.h
 
 CMakeFiles/Chess.dir/player_map.c.o: ../map.h
 CMakeFiles/Chess.dir/player_map.c.o: ../player_map.c

@@ -2,7 +2,11 @@
 #define CHESS_PLAYER_MAP_H
 #include "map.h"
 
+#ifndef TOURNAMENT_MAP_H
+#ifndef CHESS_GAME_MAP_H
 typedef int PlayerId;
+#endif
+#endif
 typedef struct player_data* PlayerData;
 
 typedef enum {

@@ -77,35 +77,22 @@ include CMakeFiles/Chess.dir/progress.make
 # Include the compile flags for this target's objects.
 include CMakeFiles/Chess.dir/flags.make
 
-CMakeFiles/Chess.dir/chessSystem.c.o: CMakeFiles/Chess.dir/flags.make
-CMakeFiles/Chess.dir/chessSystem.c.o: ../chessSystem.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir="/Users/guycohen/OneDrive - Technion/1 Courses/מבוא לתכנות מערכות/HW/HW1/Chess/cmake-build-debug/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_1) "Building C object CMakeFiles/Chess.dir/chessSystem.c.o"
-	/usr/local/bin/gcc-10 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/Chess.dir/chessSystem.c.o   -c "/Users/guycohen/OneDrive - Technion/1 Courses/מבוא לתכנות מערכות/HW/HW1/Chess/chessSystem.c"
+CMakeFiles/Chess.dir/map.c.o: CMakeFiles/Chess.dir/flags.make
+CMakeFiles/Chess.dir/map.c.o: ../map.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir="/Users/guycohen/OneDrive - Technion/1 Courses/מבוא לתכנות מערכות/HW/HW1/Chess/cmake-build-debug/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_1) "Building C object CMakeFiles/Chess.dir/map.c.o"
+	/usr/local/bin/gcc-10 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/Chess.dir/map.c.o   -c "/Users/guycohen/OneDrive - Technion/1 Courses/מבוא לתכנות מערכות/HW/HW1/Chess/map.c"
 
-CMakeFiles/Chess.dir/chessSystem.c.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/Chess.dir/chessSystem.c.i"
-	/usr/local/bin/gcc-10 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E "/Users/guycohen/OneDrive - Technion/1 Courses/מבוא לתכנות מערכות/HW/HW1/Chess/chessSystem.c" > CMakeFiles/Chess.dir/chessSystem.c.i
+CMakeFiles/Chess.dir/map.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/Chess.dir/map.c.i"
+	/usr/local/bin/gcc-10 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E "/Users/guycohen/OneDrive - Technion/1 Courses/מבוא לתכנות מערכות/HW/HW1/Chess/map.c" > CMakeFiles/Chess.dir/map.c.i
 
-CMakeFiles/Chess.dir/chessSystem.c.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/Chess.dir/chessSystem.c.s"
-	/usr/local/bin/gcc-10 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S "/Users/guycohen/OneDrive - Technion/1 Courses/מבוא לתכנות מערכות/HW/HW1/Chess/chessSystem.c" -o CMakeFiles/Chess.dir/chessSystem.c.s
-
-CMakeFiles/Chess.dir/game_map.c.o: CMakeFiles/Chess.dir/flags.make
-CMakeFiles/Chess.dir/game_map.c.o: ../game_map.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir="/Users/guycohen/OneDrive - Technion/1 Courses/מבוא לתכנות מערכות/HW/HW1/Chess/cmake-build-debug/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_2) "Building C object CMakeFiles/Chess.dir/game_map.c.o"
-	/usr/local/bin/gcc-10 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/Chess.dir/game_map.c.o   -c "/Users/guycohen/OneDrive - Technion/1 Courses/מבוא לתכנות מערכות/HW/HW1/Chess/game_map.c"
-
-CMakeFiles/Chess.dir/game_map.c.i: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/Chess.dir/game_map.c.i"
-	/usr/local/bin/gcc-10 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E "/Users/guycohen/OneDrive - Technion/1 Courses/מבוא לתכנות מערכות/HW/HW1/Chess/game_map.c" > CMakeFiles/Chess.dir/game_map.c.i
-
-CMakeFiles/Chess.dir/game_map.c.s: cmake_force
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/Chess.dir/game_map.c.s"
-	/usr/local/bin/gcc-10 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S "/Users/guycohen/OneDrive - Technion/1 Courses/מבוא לתכנות מערכות/HW/HW1/Chess/game_map.c" -o CMakeFiles/Chess.dir/game_map.c.s
+CMakeFiles/Chess.dir/map.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/Chess.dir/map.c.s"
+	/usr/local/bin/gcc-10 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S "/Users/guycohen/OneDrive - Technion/1 Courses/מבוא לתכנות מערכות/HW/HW1/Chess/map.c" -o CMakeFiles/Chess.dir/map.c.s
 
 CMakeFiles/Chess.dir/player_map.c.o: CMakeFiles/Chess.dir/flags.make
 CMakeFiles/Chess.dir/player_map.c.o: ../player_map.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir="/Users/guycohen/OneDrive - Technion/1 Courses/מבוא לתכנות מערכות/HW/HW1/Chess/cmake-build-debug/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_3) "Building C object CMakeFiles/Chess.dir/player_map.c.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir="/Users/guycohen/OneDrive - Technion/1 Courses/מבוא לתכנות מערכות/HW/HW1/Chess/cmake-build-debug/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_2) "Building C object CMakeFiles/Chess.dir/player_map.c.o"
 	/usr/local/bin/gcc-10 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/Chess.dir/player_map.c.o   -c "/Users/guycohen/OneDrive - Technion/1 Courses/מבוא לתכנות מערכות/HW/HW1/Chess/player_map.c"
 
 CMakeFiles/Chess.dir/player_map.c.i: cmake_force
@@ -115,6 +102,19 @@ CMakeFiles/Chess.dir/player_map.c.i: cmake_force
 CMakeFiles/Chess.dir/player_map.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/Chess.dir/player_map.c.s"
 	/usr/local/bin/gcc-10 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S "/Users/guycohen/OneDrive - Technion/1 Courses/מבוא לתכנות מערכות/HW/HW1/Chess/player_map.c" -o CMakeFiles/Chess.dir/player_map.c.s
+
+CMakeFiles/Chess.dir/game_map.c.o: CMakeFiles/Chess.dir/flags.make
+CMakeFiles/Chess.dir/game_map.c.o: ../game_map.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir="/Users/guycohen/OneDrive - Technion/1 Courses/מבוא לתכנות מערכות/HW/HW1/Chess/cmake-build-debug/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_3) "Building C object CMakeFiles/Chess.dir/game_map.c.o"
+	/usr/local/bin/gcc-10 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/Chess.dir/game_map.c.o   -c "/Users/guycohen/OneDrive - Technion/1 Courses/מבוא לתכנות מערכות/HW/HW1/Chess/game_map.c"
+
+CMakeFiles/Chess.dir/game_map.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/Chess.dir/game_map.c.i"
+	/usr/local/bin/gcc-10 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E "/Users/guycohen/OneDrive - Technion/1 Courses/מבוא לתכנות מערכות/HW/HW1/Chess/game_map.c" > CMakeFiles/Chess.dir/game_map.c.i
+
+CMakeFiles/Chess.dir/game_map.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/Chess.dir/game_map.c.s"
+	/usr/local/bin/gcc-10 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S "/Users/guycohen/OneDrive - Technion/1 Courses/מבוא לתכנות מערכות/HW/HW1/Chess/game_map.c" -o CMakeFiles/Chess.dir/game_map.c.s
 
 CMakeFiles/Chess.dir/tournament_map.c.o: CMakeFiles/Chess.dir/flags.make
 CMakeFiles/Chess.dir/tournament_map.c.o: ../tournament_map.c
@@ -129,9 +129,22 @@ CMakeFiles/Chess.dir/tournament_map.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/Chess.dir/tournament_map.c.s"
 	/usr/local/bin/gcc-10 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S "/Users/guycohen/OneDrive - Technion/1 Courses/מבוא לתכנות מערכות/HW/HW1/Chess/tournament_map.c" -o CMakeFiles/Chess.dir/tournament_map.c.s
 
+CMakeFiles/Chess.dir/chessSystem.c.o: CMakeFiles/Chess.dir/flags.make
+CMakeFiles/Chess.dir/chessSystem.c.o: ../chessSystem.c
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir="/Users/guycohen/OneDrive - Technion/1 Courses/מבוא לתכנות מערכות/HW/HW1/Chess/cmake-build-debug/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_5) "Building C object CMakeFiles/Chess.dir/chessSystem.c.o"
+	/usr/local/bin/gcc-10 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/Chess.dir/chessSystem.c.o   -c "/Users/guycohen/OneDrive - Technion/1 Courses/מבוא לתכנות מערכות/HW/HW1/Chess/chessSystem.c"
+
+CMakeFiles/Chess.dir/chessSystem.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Preprocessing C source to CMakeFiles/Chess.dir/chessSystem.c.i"
+	/usr/local/bin/gcc-10 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E "/Users/guycohen/OneDrive - Technion/1 Courses/מבוא לתכנות מערכות/HW/HW1/Chess/chessSystem.c" > CMakeFiles/Chess.dir/chessSystem.c.i
+
+CMakeFiles/Chess.dir/chessSystem.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green "Compiling C source to assembly CMakeFiles/Chess.dir/chessSystem.c.s"
+	/usr/local/bin/gcc-10 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S "/Users/guycohen/OneDrive - Technion/1 Courses/מבוא לתכנות מערכות/HW/HW1/Chess/chessSystem.c" -o CMakeFiles/Chess.dir/chessSystem.c.s
+
 CMakeFiles/Chess.dir/tests/chessSystemTestsExample.c.o: CMakeFiles/Chess.dir/flags.make
 CMakeFiles/Chess.dir/tests/chessSystemTestsExample.c.o: ../tests/chessSystemTestsExample.c
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir="/Users/guycohen/OneDrive - Technion/1 Courses/מבוא לתכנות מערכות/HW/HW1/Chess/cmake-build-debug/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_5) "Building C object CMakeFiles/Chess.dir/tests/chessSystemTestsExample.c.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --progress-dir="/Users/guycohen/OneDrive - Technion/1 Courses/מבוא לתכנות מערכות/HW/HW1/Chess/cmake-build-debug/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_6) "Building C object CMakeFiles/Chess.dir/tests/chessSystemTestsExample.c.o"
 	/usr/local/bin/gcc-10 $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -o CMakeFiles/Chess.dir/tests/chessSystemTestsExample.c.o   -c "/Users/guycohen/OneDrive - Technion/1 Courses/מבוא לתכנות מערכות/HW/HW1/Chess/tests/chessSystemTestsExample.c"
 
 CMakeFiles/Chess.dir/tests/chessSystemTestsExample.c.i: cmake_force
@@ -144,23 +157,25 @@ CMakeFiles/Chess.dir/tests/chessSystemTestsExample.c.s: cmake_force
 
 # Object files for target Chess
 Chess_OBJECTS = \
-"CMakeFiles/Chess.dir/chessSystem.c.o" \
-"CMakeFiles/Chess.dir/game_map.c.o" \
+"CMakeFiles/Chess.dir/map.c.o" \
 "CMakeFiles/Chess.dir/player_map.c.o" \
+"CMakeFiles/Chess.dir/game_map.c.o" \
 "CMakeFiles/Chess.dir/tournament_map.c.o" \
+"CMakeFiles/Chess.dir/chessSystem.c.o" \
 "CMakeFiles/Chess.dir/tests/chessSystemTestsExample.c.o"
 
 # External object files for target Chess
 Chess_EXTERNAL_OBJECTS =
 
-Chess: CMakeFiles/Chess.dir/chessSystem.c.o
-Chess: CMakeFiles/Chess.dir/game_map.c.o
+Chess: CMakeFiles/Chess.dir/map.c.o
 Chess: CMakeFiles/Chess.dir/player_map.c.o
+Chess: CMakeFiles/Chess.dir/game_map.c.o
 Chess: CMakeFiles/Chess.dir/tournament_map.c.o
+Chess: CMakeFiles/Chess.dir/chessSystem.c.o
 Chess: CMakeFiles/Chess.dir/tests/chessSystemTestsExample.c.o
 Chess: CMakeFiles/Chess.dir/build.make
 Chess: CMakeFiles/Chess.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir="/Users/guycohen/OneDrive - Technion/1 Courses/מבוא לתכנות מערכות/HW/HW1/Chess/cmake-build-debug/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_6) "Linking C executable Chess"
+	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --green --bold --progress-dir="/Users/guycohen/OneDrive - Technion/1 Courses/מבוא לתכנות מערכות/HW/HW1/Chess/cmake-build-debug/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_7) "Linking C executable Chess"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/Chess.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

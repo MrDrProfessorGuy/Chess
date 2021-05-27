@@ -130,8 +130,8 @@ void playerDestroyMap(Map player_map){
 bool playerExceededGames(Map player_map, PlayerId player_id, int num_of_games){
     assert(player_map);
     PlayerData player_data = mapGet(player_map, &player_id);
-    assert(player_data);
-    if (player_data->num_of_games <= num_of_games){
+    //assert(player_data);
+    if (!player_data || player_data->num_of_games <= num_of_games){
         return false;
     }
     return true;
@@ -208,7 +208,7 @@ PlayerId playerGetMaxLevelAndId(Map player_map, double* max_level, bool remove){
         }
         freePlayerKey(player_key);
     }
-    if (remove && max_level > 0){
+    if (remove && *max_level > 0){
         playerRemove(player_map, max_id);
     }
     return max_id;
@@ -497,6 +497,9 @@ PlayerResult playerCalculateAveragePlayTime(Map player_map, PlayerId player_id, 
         return PLAYER_OUT_OF_MEMORY;
     }
     
+    if (player_data->num_of_games == 0){
+        return 0;
+    }
     *play_time = (double)(player_data->total_play_time)/player_data->num_of_games;
     return PLAYER_SUCCESS;
 }

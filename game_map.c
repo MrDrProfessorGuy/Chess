@@ -53,7 +53,7 @@ static GameKey createGameKey(PlayerId player1_id, PlayerId player2_id);
 static GameData createGameData(int play_time, Winner winner);
 
 
-static bool gameKeyIsValid(GameKey game_key);
+//static bool gameKeyIsValid(GameKey game_key);
 static bool playerIdIsValid(PlayerId player_id);
 /**
  * reorderPlayers: given valid id's and play_time pointers, the id's will be reordered
@@ -66,7 +66,7 @@ static bool playerIdIsValid(PlayerId player_id);
  *      false - if the given id's were already in the correct order
  */
 static bool reorderPlayers(PlayerId* id1, PlayerId* id2);
-static void switchWinner(int* winner);
+static Winner switchWinner(Winner winner);
 static PlayerId playerParticipatesInGame(GameKey game_key, PlayerId player_id);
 static Winner playerGameResult(GameKey game_key, GameData game_data, PlayerId first_player);
 
@@ -174,7 +174,7 @@ static GameData createGameData(int play_time, Winner winner){
     return game_data;
 }
 
-
+/*
 static bool gameKeyIsValid(GameKey game_key){
     assert(game_key);
     if (!playerIdIsValid(game_key->player1_id) || !playerIdIsValid(game_key->player2_id)){
@@ -184,6 +184,7 @@ static bool gameKeyIsValid(GameKey game_key){
     
     return true;
 }
+ */
 static bool playerIdIsValid(PlayerId player_id){
     if (player_id > 0){
         return true;
@@ -202,13 +203,14 @@ static bool reorderPlayers(PlayerId* id1, PlayerId* id2){
     return false;
 }
 
-static void switchWinner(int* winner){
-    if (*winner == FIRST_PLAYER){
-        *winner = SECOND_PLAYER;
+static Winner switchWinner(Winner winner){
+    if (winner == FIRST_PLAYER){
+        return SECOND_PLAYER;
     }
-    else if (*winner == SECOND_PLAYER){
-        *winner = FIRST_PLAYER;
+    else if (winner == SECOND_PLAYER){
+        return FIRST_PLAYER;
     }
+    return DRAW;
 }
 //returns second player id
 static PlayerId playerParticipatesInGame(GameKey game_key, PlayerId player_id){
@@ -224,11 +226,11 @@ static PlayerId playerParticipatesInGame(GameKey game_key, PlayerId player_id){
 
 static Winner playerGameResult(GameKey game_key, GameData game_data, PlayerId first_player){
     if (first_player == game_key->player2_id){
-        switchWinner(&game_data->winner);
+        game_data->winner = switchWinner(game_data->winner);
     }
     return game_data->winner;
 }
-
+/*
 static GameData gameGetDataPointer(Map game_map, PlayerId player1_id, PlayerId player2_id){
     GameKey game_key = createGameKey(player1_id, player2_id);
     if (!game_key){
@@ -243,7 +245,7 @@ static GameData gameGetDataPointer(Map game_map, PlayerId player1_id, PlayerId p
     
     return game_data;
 }
-
+*/
 static bool gameCreateKeyDataPair(int play_time, Winner winner, PlayerId player1_id, PlayerId player2_id,
                                   GameKey* game_key_ptr, GameData* game_data_ptr){
     if (!game_key_ptr || !game_data_ptr){
@@ -306,7 +308,7 @@ GameResult gameAdd(Map game_map, int play_time, Winner winner,
     }
     
     if (reorderPlayers(&player1_id, &player2_id)){
-        switchWinner(&winner);
+        winner = switchWinner(winner);
     }
     GameKey game_key;
     GameData game_data;
@@ -396,6 +398,14 @@ bool gameGetDataByPlayerId(Map game_map, PlayerId first_player, PlayerId* second
     }
     return false;
 }
+
+int gameGetNumOfGames(Map game_map){
+    if (!game_map){
+        return 0;
+    }
+    return mapGetSize(game_map);
+}
+
 
 /*
 GameData gameGetData(Map game_map, PlayerId player1_id, PlayerId player2_id){

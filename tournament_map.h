@@ -3,6 +3,7 @@
 
 #include "map.h"
 
+
 typedef enum {
     TOURNAMENT_OUT_OF_MEMORY,
     TOURNAMENT_NULL_ARGUMENT,
@@ -22,8 +23,14 @@ typedef enum {
     TOURNAMENT_SUCCESS
 } TournamentResult ;
 
-typedef int TournamentId;
+#ifndef CHESS_GAME_MAP_H
+#ifndef CHESS_PLAYER_MAP_H
 typedef int PlayerId;
+#endif
+#endif
+
+typedef int TournamentId;
+typedef struct tournament_data* TournamentData;
 typedef char* Location;
 
 
@@ -39,7 +46,8 @@ TournamentResult tournamentRemove(Map tournament_map, TournamentId tournament_id
 
 
 bool tournamentEnded(Map tournament_map, TournamentId tournament_id);
-int tournamentGetMaxGames(Map tournament_map, TournamentId tournament_id);
+TournamentData tournamentGet(Map tournament_map, TournamentId tournament_id);
+TournamentResult tournamentGetMaxGamesPerPlayer(Map tournament_map, TournamentId tournament_id, int* max_games);
 PlayerId tournamentGetWinnerId(Map tournament_map, TournamentId tournament_id);
 Location tournamentGetLocation(Map tournament_map, TournamentId tournament_id);
 bool tournamentContains(Map tournament_map, TournamentId tournament_id);
@@ -57,7 +65,6 @@ TournamentResult tournamentUpdateStatistics(Map tournament_map, TournamentId tou
                                             int play_time,int new_players);
 
 TournamentResult tournamentEnd(Map tournament_map, TournamentId tournament_id);
-
 
 
 
