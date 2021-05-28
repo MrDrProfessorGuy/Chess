@@ -70,9 +70,12 @@ static MapDataElement copyTournamentData(MapDataElement data) {
     if (!data_copy) {
         return NULL;
     }
-
-    Map game_map_copy = mapCopy(((TournamentData)data)->game_map);
-    if (!game_map_copy) {
+    playerDestroyMap(data_copy->player_map);
+    gameDestroyMap(data_copy->game_map);
+    free(data_copy->location);
+    
+    data_copy->game_map = mapCopy(((TournamentData)data)->game_map);
+    if (!data_copy->game_map) {
         freeTournamentData(data_copy);
         return NULL;
     }
@@ -88,12 +91,12 @@ static MapDataElement copyTournamentData(MapDataElement data) {
     //same goes for player_map_copy  
     ///mapDestroy(data_copy->game_map);
     ///data_copy->player_map = game_map_copy;
-    data_copy->game_map = game_map_copy;
+    //data_copy->game_map = game_map_copy;
 
     ///Map player_map_copy = mapCopy(((TournamentData)data)->player_map);
-    Map player_map_copy = playerCreateMap();
-    if (!player_map_copy) {
-        gameDestroyMap(game_map_copy);///added
+    data_copy->player_map = mapCopy(((TournamentData)data)->player_map);
+    if (!data_copy->player_map) {
+        //gameDestroyMap(game_map_copy);///added
         freeTournamentData(data_copy);
         //
         return NULL;
@@ -101,20 +104,20 @@ static MapDataElement copyTournamentData(MapDataElement data) {
 
     //look at the previous note
     ///mapDestroy(data_copy->player_map);
-    data_copy->player_map = player_map_copy;
+    //data_copy->player_map = player_map_copy;
 
     //is malloc and all needed? or strcpy(tournament_data_copy->location, tournament_data->location) enough?
-    Location location_copy = malloc(sizeof(strlen(((TournamentData)data)->location) + 1));/// can discard const?
-    if (!location_copy) {
-        gameDestroyMap(game_map_copy);///added
-        playerDestroyMap(player_map_copy);///added
+    data_copy->location = malloc(strlen(((TournamentData)data)->location) + 1);/// can discard const?
+    if (!data_copy->location) {
+        //gameDestroyMap(game_map_copy);///added
+        //playerDestroyMap(player_map_copy);///added
         freeTournamentData(data_copy);
         //mapDestroy(game_map_copy);
         //mapDestroy(player_map_copy);
         return NULL;
     }
 
-    data_copy->location = strcpy(location_copy, ((TournamentData)data)->location);/// can discard const?
+    strcpy(data_copy->location, ((TournamentData)data)->location);/// can discard const?
 
     data_copy->winner_id = ((TournamentData)data)->winner_id; 
     data_copy->max_games_per_player = ((TournamentData)data)->max_games_per_player;
@@ -589,7 +592,7 @@ void tournamentPlayerRemove(Map tournament_map, Map player_statistics_map, Playe
         TournamentData tournament_data = tournamentGet(tournament_map, *tournament_Key);
         assert(tournament_data);
         
-        if (tournament_data->has_ended){
+        if (tournament_data->has_ended == false){
             Map player_map = tournament_data->player_map;///maybe recover from these errors?
             Map game_map = tournament_data->game_map;
             assert(game_map);
@@ -611,12 +614,11 @@ void tournamentPlayerRemove(Map tournament_map, Map player_statistics_map, Playe
                     gameRemove(game_map, first_player, second_player);
                 }//while
                 playerRemove(player_map, first_player);// remove the player from the tournament
-            }//if (playerExists(player_map, player_id))
-            
-            playerRemove(player_statistics_map, first_player);
+            }//if (playerExists()
         }
         freeTournamentKey(tournament_Key);
     }//MAP_FOREACH
+    playerRemove(player_statistics_map, first_player);
 }
 
 
@@ -650,10 +652,13 @@ TournamentResult tournamentAdd(Map tournament_map, int tournament_id,
         freeTournamentData(tournament_data);
         return TOURNAMENT_OUT_OF_MEMORY;
     }
-    
-    mapPut(tournament_map, tournament_key, tournament_data);/// copy?
-    freeTournamentData(tournament_data);
+    if (mapPut(tournament_map, tournament_key, tournament_data) != MAP_SUCCESS){
+        freeTournamentKey(tournament_key);
+        freeTournamentData(tournament_data);
+        return TOURNAMENT_OUT_OF_MEMORY;
+    }
     freeTournamentKey(tournament_key);
+    freeTournamentData(tournament_data);
     return TOURNAMENT_SUCCESS;
 }
 
@@ -737,8 +742,9 @@ bool tournamentLocationIsValid(const char* location){
 *     CHESS_EXCEEDED_GAMES - if one of the players played the maximum number of games allowed
         *     CHESS_SUCCESS - if game was added successfully.
 */
+/*
 static TournamentResult checkValidityBeforeAddingGame(Map tournament_map, int tournament_id, int first_player,
-                                                      int second_player, Winner winner, int play_time){
+                                                      int second_player, int play_time){
     if (!tournament_map){
         return TOURNAMENT_NULL_ARGUMENT;
     }
@@ -814,7 +820,7 @@ TournamentResult tournamentAddGame(Map tournament_map, TournamentId tournament_i
 
     return TOURNAMENT_SUCCESS;
 }
-
+*/
 
 TournamentResult tournamentUpdateStatistics(Map tournament_map, TournamentId tournament_id,
                                             int play_time,int new_players){

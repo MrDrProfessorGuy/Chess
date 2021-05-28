@@ -159,7 +159,8 @@ PlayerResult playerAdd(Map player_map, PlayerId player_id){
         freePlayerData(player_data);
         return PLAYER_OUT_OF_MEMORY;
     }
-    
+    freePlayerKey(player_key);
+    freePlayerData(player_data);
     return PLAYER_SUCCESS;
 }
 
@@ -237,7 +238,7 @@ PlayerResult playerUpdateData(Map player_map, PlayerId first_player, int play_ti
     return PLAYER_SUCCESS;
 }
 */
-
+/*
 PlayerData playerGetDataC(Map player_map, PlayerId player_id){
     if (!player_map){
         return NULL;
@@ -264,7 +265,7 @@ PlayerResult playerPutData(Map player_map, PlayerId player_id, PlayerData player
     
     return PLAYER_SUCCESS;
 }
-
+*/
 
 
 PlayerResult playerUpdateDuelResult(Map player_map, PlayerId first_player, PlayerId second_player, int play_time,
@@ -441,18 +442,18 @@ PlayerId playerCalculateWinner(Map player_map){
     if (!player_map){
         return 0;
     }
-    
+    /*
     Map player_map_copy = playerMapCopy(player_map);
     if (!player_map_copy){
         return 0;
     }
-    
-    PlayerKey winner_key = mapGetFirst(player_map_copy);///remember to free
-    PlayerData winner_data = playerGetData(player_map_copy, *winner_key);
+    */
+    PlayerKey winner_key = mapGetFirst(player_map);///remember to free
+    PlayerData winner_data = playerGetData(player_map, *winner_key);
     int winner_score = playerCalculateScore(winner_data);
     
-    MAP_FOREACH(PlayerKey, player_key, player_map_copy){
-        PlayerData player_data = playerGetData(player_map_copy, *player_key);
+    MAP_FOREACH(PlayerKey, player_key, player_map){
+        PlayerData player_data = playerGetData(player_map, *player_key);
         int player_score = playerCalculateScore(player_data);
         if (player_score >= winner_score){
             if (player_score == winner_score){
@@ -471,7 +472,7 @@ PlayerId playerCalculateWinner(Map player_map){
             }//if (player_data->num_of_loses > winner_data->num_of_loses)
             freePlayerKey(winner_key);
             winner_key = player_key;
-            winner_data = playerGetData(player_map_copy, *winner_key);
+            winner_data = playerGetData(player_map, *winner_key);
             winner_score = player_score;
             continue;
         }// if (player_score == winner_score)
@@ -481,6 +482,7 @@ PlayerId playerCalculateWinner(Map player_map){
     
     PlayerId winner_id = *winner_key;
     freePlayerKey(winner_key);
+    //playerDestroyMap(player_map_copy);
     return winner_id;
 }
 

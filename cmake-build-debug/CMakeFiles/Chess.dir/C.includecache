@@ -6,6 +6,18 @@
 
 #IncludeRegexTransform: 
 
+/Users/guycohen/OneDrive - Technion/1 Courses/מבוא לתכנות מערכות/HW/HW1/Chess/game_map.c
+game_map.h
+/Users/guycohen/OneDrive - Technion/1 Courses/מבוא לתכנות מערכות/HW/HW1/Chess/game_map.h
+assert.h
+-
+stdlib.h
+-
+
+/Users/guycohen/OneDrive - Technion/1 Courses/מבוא לתכנות מערכות/HW/HW1/Chess/game_map.h
+map.h
+/Users/guycohen/OneDrive - Technion/1 Courses/מבוא לתכנות מערכות/HW/HW1/Chess/map.h
+
 /Users/guycohen/OneDrive - Technion/1 Courses/מבוא לתכנות מערכות/HW/HW1/Chess/map.h
 stdbool.h
 -

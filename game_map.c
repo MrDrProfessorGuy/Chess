@@ -322,7 +322,8 @@ GameResult gameAdd(Map game_map, int play_time, Winner winner,
         freeGameData(game_data);
         return GAME_OUT_OF_MEMORY;
     }
-    
+    freeGameKey(game_key);
+    freeGameData(game_data);
     return GAME_SUCCESS;
 }
 

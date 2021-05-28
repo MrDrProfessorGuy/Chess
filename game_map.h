@@ -83,7 +83,7 @@ GameResult gameRemove(Map game_map, PlayerId player1_id, PlayerId player2_id);
  * @return
  *      GAME_OUT_OF_MEMORY - if an allocation failed
  */
-GameResult gameRemoveAllPlayerParticipatedGames(Map game_map, PlayerId player_id);
+//GameResult gameRemoveAllPlayerParticipatedGames(Map game_map, PlayerId player_id);
 
 //bool gameGetSecondPlayerId(Map game_map, PlayerId player_id, PlayerId* second_player);
 /**
