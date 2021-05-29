@@ -4,7 +4,7 @@ EXEC1 = chess
 OBJS1 = chessSystemTestsExample.o game_map.o player_map.o tournament_map.o chessSystem.o
 OBJS2 = chess.o
 DEBUG_FLAG = -g
-COMP_FLAG = -std=c99 -Wall -Werror -pedantic-errors 
+COMP_FLAG = -std=c99 -Wall -Werror -pedantic-errors -DNDEBUG
 
 $(EXEC1) : $(OBJS2)
 	$(CC) $(OBJS2) $(COMP_FLAG) -L. -lmap -o $@

@@ -8,6 +8,10 @@ CMakeFiles/Chess.dir/chessSystem.c.o: ../map.h
 CMakeFiles/Chess.dir/chessSystem.c.o: ../player_map.h
 CMakeFiles/Chess.dir/chessSystem.c.o: ../tournament_map.h
 
+CMakeFiles/Chess.dir/chessSystemTestsExample.c.o: ../chessSystem.h
+CMakeFiles/Chess.dir/chessSystemTestsExample.c.o: ../chessSystemTestsExample.c
+CMakeFiles/Chess.dir/chessSystemTestsExample.c.o: ../test_utilities.h
+
 CMakeFiles/Chess.dir/game_map.c.o: ../game_map.c
 CMakeFiles/Chess.dir/game_map.c.o: ../game_map.h
 CMakeFiles/Chess.dir/game_map.c.o: ../map.h
@@ -18,10 +22,6 @@ CMakeFiles/Chess.dir/map.c.o: ../map.h
 CMakeFiles/Chess.dir/player_map.c.o: ../map.h
 CMakeFiles/Chess.dir/player_map.c.o: ../player_map.c
 CMakeFiles/Chess.dir/player_map.c.o: ../player_map.h
-
-CMakeFiles/Chess.dir/tests/chessSystemTestsExample.c.o: ../chessSystem.h
-CMakeFiles/Chess.dir/tests/chessSystemTestsExample.c.o: ../test_utilities.h
-CMakeFiles/Chess.dir/tests/chessSystemTestsExample.c.o: ../tests/chessSystemTestsExample.c
 
 CMakeFiles/Chess.dir/tournament_map.c.o: ../game_map.h
 CMakeFiles/Chess.dir/tournament_map.c.o: ../map.h

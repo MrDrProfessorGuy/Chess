@@ -11,8 +11,8 @@ project(Chess VERSION 0.1.0 LANGUAGES C)
 # set(CMAKE_VERBOSE_MAKEFILE ON)
 
 # Define variables containing compiler flags for gcc
-set(MTM_FLAGS_DEBUG "-std=c99 --pedantic-errors -Wall -Werror")
-set(MTM_FLAGS_RELEASE "${MTM_FLAGS_DEBUG} -DNDEBUG")
+set(MTM_FLAGS_DEBUG "-std=c99 --pedantic-errors -Wall -Werror -DNDEBUG")
+set(MTM_FLAGS_RELEASE "${MTM_FLAGS_DEBUG}")
 
 set(CMAKE_C_FLAGS ${MTM_FLAGS_DEBUG})
 
@@ -25,5 +25,5 @@ add_executable(Chess
         game_map.c
         tournament_map.c
         chessSystem.c
-        tests/chessSystemTestsExample.c
+        chessSystemTestsExample.c
         )

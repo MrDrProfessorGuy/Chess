@@ -96,6 +96,9 @@
 		<Unit filename="/Users/guycohen/OneDrive - Technion/1 Courses/מבוא לתכנות מערכות/HW/HW1/Chess/chessSystem.h">
 			<Option target="Chess"/>
 		</Unit>
+		<Unit filename="/Users/guycohen/OneDrive - Technion/1 Courses/מבוא לתכנות מערכות/HW/HW1/Chess/chessSystemTestsExample.c">
+			<Option target="Chess"/>
+		</Unit>
 		<Unit filename="/Users/guycohen/OneDrive - Technion/1 Courses/מבוא לתכנות מערכות/HW/HW1/Chess/game_map.c">
 			<Option target="Chess"/>
 		</Unit>
@@ -112,9 +115,6 @@
 			<Option target="Chess"/>
 		</Unit>
 		<Unit filename="/Users/guycohen/OneDrive - Technion/1 Courses/מבוא לתכנות מערכות/HW/HW1/Chess/player_map.h">
-			<Option target="Chess"/>
-		</Unit>
-		<Unit filename="/Users/guycohen/OneDrive - Technion/1 Courses/מבוא לתכנות מערכות/HW/HW1/Chess/tests/chessSystemTestsExample.c">
 			<Option target="Chess"/>
 		</Unit>
 		<Unit filename="/Users/guycohen/OneDrive - Technion/1 Courses/מבוא לתכנות מערכות/HW/HW1/Chess/tournament_map.c">

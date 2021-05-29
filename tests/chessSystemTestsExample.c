@@ -39,7 +39,7 @@ bool testChessAddGame(){
 }
 
 bool testChessPrintLevelsAndTournamentStatistics(){
-    FILE* file_levels = fopen("./tests/player_levels_your_output.txt", "w");
+    FILE* file_levels = fopen("player_levels_your_output.txt", "w");
     if(!file_levels){
         printf("test failed to open file, make sure you have the folder tests in the same folder with chessSystem"
                "excutable file and you have write permissions for the file /tests/player_levels_your_output.txt");
@@ -55,7 +55,7 @@ bool testChessPrintLevelsAndTournamentStatistics(){
     ASSERT_TEST(chessAddGame(chess, 1, 3, 4, DRAW, 400) == CHESS_SUCCESS);
     ASSERT_TEST(chessEndTournament(chess, 1) == CHESS_SUCCESS);
     ASSERT_TEST(chessSavePlayersLevels(chess, file_levels) == CHESS_SUCCESS);
-    ASSERT_TEST(chessSaveTournamentStatistics(chess, "./tests/tournament_statistics_your_output.txt") == CHESS_SUCCESS);
+    ASSERT_TEST(chessSaveTournamentStatistics(chess, "tournament_statistics_your_output.txt") == CHESS_SUCCESS);
     chessDestroy(chess);
     fclose(file_levels);
     return true;
@@ -67,16 +67,18 @@ bool testChessPrintLevelsAndTournamentStatistics(){
 bool (*tests[]) (void) = {
         testChessAddTournament,
         testChessRemoveTournament,
-        testChessAddGame,
-        testChessPrintLevelsAndTournamentStatistics
+        testChessPrintLevelsAndTournamentStatistics,
+        testChessAddGame
+        
 };
 
 /*The names of the test functions should be added here*/
 const char* testNames[] = {
         "testChessAddTournament",
         "testChessRemoveTournament",
-        "testChessAddGame",
-        "testChessPrintLevelsAndTournamentStatistics"
+        
+        "testChessPrintLevelsAndTournamentStatistics",
+        "testChessAddGame"
 };
 
 

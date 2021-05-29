@@ -14,6 +14,7 @@ struct player_data{
 };
 
 /********************* static functions *********************/
+///Documentation below
 static MapKeyElement copyPlayerKey(MapKeyElement player_key);
 static MapDataElement copyPlayerData(MapDataElement data);
 static void freePlayerKey(MapKeyElement player_key);
@@ -25,13 +26,20 @@ static PlayerKey createPlayerKey(PlayerId id);
 static PlayerData createPlayerData();
 
 static bool playerKeyIsValid(PlayerKey player_key);
-
+static bool playerHasGames(Map player_map, PlayerId player_id, bool remove_if_no_games);
 
 
 /********************************************************************/
 /********************* Function Implementation *********************/
 /******************************************************************/
-
+/**
+*copyPlayerKey: Creates a copy of target key.
+*
+* @param player_key - Target key.
+* @return
+*NULL if a NULL was sent or a memory allocation failed.
+* A MapKeyElement containing the same elements as player_key.
+*/
 static MapKeyElement copyPlayerKey(MapKeyElement player_key){
     if (!playerKeyIsValid(player_key)){
         return NULL;
@@ -42,6 +50,14 @@ static MapKeyElement copyPlayerKey(MapKeyElement player_key){
     }
     return key_copy;
 }
+/**
+*copyPlayerData: Creates a copy of target data.
+*
+* @param data - Target data.
+* @return
+*NULL if a NULL was sent or a memory allocation failed.
+* A MapDataElement containing the same elements as data.
+*/
 static MapDataElement copyPlayerData(MapDataElement data){
     if (!data){
         return NULL;
@@ -57,17 +73,47 @@ static MapDataElement copyPlayerData(MapDataElement data){
     data_copy->total_play_time = ((PlayerData)data)->total_play_time;
     return data_copy;
 }
+/**
+* freePlayerKey: Deallocates an existing key. Clears all elements by using the
+* stored free functions.
+*
+* @param player_key - Target key to be deallocated. If player_key is NULL nothing will be
+* 		done
+*/
 static void freePlayerKey(MapKeyElement player_key){
     free(player_key);
 }
+/**
+* freePlayerData: Deallocates an existing data. Clears all elements by using the
+* stored free functions.
+*
+* @param data - Target data to be deallocated. If data is NULL nothing will be
+* 		done
+*/
 static void freePlayerData(MapDataElement data){
     free(data);
 }
+/**
+    * comparePlayerKey: identifies equal key elements.
+    *
+    *@param player1_key - first key to be compared.
+    *@param player2_key - second key to be compared.
+    *
+    * @return-
+    * 		A positive integer if the first key is greater;
+    * 		0 if they're equal;
+    *		A negative integer if the second key is greater.
+*/
 static int comparePlayerKey(MapKeyElement player1_key, MapKeyElement player2_key){
     return (*(PlayerKey)player1_key - *(PlayerKey)player2_key);
 }
-
-
+/**
+* createPlayerData: Allocates a new empty Player data.
+*
+* @return
+* 	NULL - if allocations failed.
+* 	A new PlayerData in case of success.
+*/
 static PlayerData createPlayerData(){
     PlayerData player_data = malloc(sizeof(*player_data));
     if (!player_data){
@@ -82,8 +128,17 @@ static PlayerData createPlayerData(){
     
     return player_data;
 }
+/**
+* createPlayerKey: Allocates a new key as player id.
+*
+* @param PlayerId - the Player id to be set as the key of the player
+*
+* @return
+* 	NULL - if allocations failed.
+* 	A new PlayerKey in case of success.
+*/
 static PlayerKey createPlayerKey(PlayerId id){
-    if (!playerIdIsValid(id)){// can remove if checked everywhere else
+    if (!playerIdIsValid(id)){
         return NULL;
     }
     PlayerKey player_id = malloc(sizeof(*player_id));
@@ -93,13 +148,50 @@ static PlayerKey createPlayerKey(PlayerId id){
     *player_id = id;
     return player_id;
 }
-
+/**
+* playerKeyIsValid: Checks if a player_key is valid.
+*
+* @param player_key - the player id to check if it's valid.
+*
+* @return
+* 	false - if id is a smaller than or equl to 0.
+* 	true - if id is a positive int bigger than 0.
+*/
 static bool playerKeyIsValid(PlayerKey player_key){
     if (!player_key || *player_key <= 0){
         return false;
     }
     return true;
 }
+/**
+ * playerHasGames: returns true if a player participates in at least one game
+ *
+ * @param player_map - pointer to the player map
+ * @param player_id  - the player id
+ * @param remove_if_no_games - bool value, if true the player will be deleted if the player exist and has no games
+ * @return
+ *      true - if a player participates in at least one game
+ *      false - in one of the following cases: the player map is NULL, the player id is invalid
+ *              or data retrieval failed
+ */
+static bool playerHasGames(Map player_map, PlayerId player_id, bool remove_if_no_games){
+    if (!player_map){
+        return  false;
+    }
+    if (!playerIdIsValid(player_id)){
+        return false;
+    }
+    PlayerData player_data = playerGetData(player_map, player_id);
+    if (!player_data){
+        false;
+    }
+    if (remove_if_no_games && player_data->num_of_games == 0){
+        playerRemove(player_map, player_id);
+        false;
+    }
+    return true;
+}
+
 
 /********************* public functions *********************/
 
@@ -124,17 +216,26 @@ Map playerCreateMap(){
 }
 
 void playerDestroyMap(Map player_map){
+    if (!player_map){
+        return;
+    }
     mapDestroy(player_map);
+}
+
+Map playerMapCopy(Map player_map){
+    if (!player_map){
+        return NULL;
+    }
+    return mapCopy(player_map);
 }
 
 bool playerExceededGames(Map player_map, PlayerId player_id, int num_of_games){
     assert(player_map);
-    PlayerData player_data = mapGet(player_map, &player_id);
-    //assert(player_data);
-    if (!player_data || player_data->num_of_games <= num_of_games){
-        return false;
+    PlayerData player_data = playerGetData(player_map, player_id);
+    if (player_data && player_data->num_of_games >= num_of_games){
+        return true;
     }
-    return true;
+    return false;
 }
 
 PlayerResult playerAdd(Map player_map, PlayerId player_id){
@@ -186,13 +287,8 @@ double playerGetLevel(Map player_map, PlayerId player_id){
     if (data->num_of_games == 0){
         return 0;
     }
-    return (double)(6*data->num_of_wins - 10*data->num_of_loses + 2*data->num_of_loses)/(data->num_of_games);
+    return (double)(6*data->num_of_wins - 10*data->num_of_loses + 2*data->num_of_draws)/(data->num_of_games);
     
-}
-
-Map playerMapCopy(Map player_map){
-    assert(player_map);
-    return mapCopy(player_map);
 }
 
 PlayerId playerGetMaxLevelAndId(Map player_map, double* max_level, bool remove){
@@ -200,84 +296,36 @@ PlayerId playerGetMaxLevelAndId(Map player_map, double* max_level, bool remove){
     double current_level = 0;
     PlayerId max_id = 0;
     *max_level = 0;
+    bool first_iteration = true;
     
     MAP_FOREACH(PlayerKey , player_key, player_map){
+        if (!playerHasGames(player_map, *player_key, true)){
+            continue;
+        }
         current_level = playerGetLevel(player_map, *player_key);
-        if (current_level > *max_level){
+        if (current_level > *max_level || first_iteration){
             max_id = *player_key;
             *max_level = current_level;
+            first_iteration = false;
         }
         freePlayerKey(player_key);
     }
-    if (remove && *max_level > 0){
+    if (remove){
         playerRemove(player_map, max_id);
     }
     return max_id;
 }
-
- /*
-PlayerResult playerUpdateData(Map player_map, PlayerId first_player, int play_time, DuelResult result){
-    assert(player_map);
-    if (!player_map){
-        return PLAYER_NULL_ARGUMENT;
-    }
-    
-    PlayerData player_data = playerGetData(player_map, first_player);
-    if (!player_data){
-        return PLAYER_INVALID_ID;
-    }
-    
-    if (result == PLAYER_LOST){
-        player_data->num_of_loses--;
-        
-    }
-    else if (result == PLAYER_DRAW){
-        player_data->num_of_draws--;
-        player_data->num_of_wins++;
-    }
-    return PLAYER_SUCCESS;
-}
-*/
-/*
-PlayerData playerGetDataC(Map player_map, PlayerId player_id){
-    if (!player_map){
-        return NULL;
-    }
-    PlayerData data = playerGetData(player_map, player_id);
-    if (!data){
-        return NULL;
-    }
-     return copyPlayerData(data);
-}
-
-PlayerResult playerPutData(Map player_map, PlayerId player_id, PlayerData player_data){
-    if (!player_map){
-        return PLAYER_NULL_ARGUMENT;
-    }
-    
-    MapResult result = mapPut(player_map, &player_id, player_data);
-    if (result == MAP_OUT_OF_MEMORY){
-        return PLAYER_OUT_OF_MEMORY;
-    }
-    else if (result == MAP_NULL_ARGUMENT){
-        return PLAYER_NULL_ARGUMENT;
-    }
-    
-    return PLAYER_SUCCESS;
-}
-*/
-
 
 PlayerResult playerUpdateDuelResult(Map player_map, PlayerId first_player, PlayerId second_player, int play_time,
                                     Winner winner, UpdateMode value){
     if (!player_map){
         return PLAYER_NULL_ARGUMENT;
     }
-    if (playerIdIsValid(first_player) && playerIdIsValid(second_player)){
+    if (!playerIdIsValid(first_player) || !playerIdIsValid(second_player)){
         return PLAYER_INVALID_ID;
     }
     PlayerData first_player_data = playerGetData(player_map, first_player);
-    PlayerData second_player_data = playerGetData(player_map, first_player);
+    PlayerData second_player_data = playerGetData(player_map, second_player);
     
     if (!first_player_data || !second_player_data){
         return PLAYER_NOT_EXIST;
@@ -303,56 +351,6 @@ PlayerResult playerUpdateDuelResult(Map player_map, PlayerId first_player, Playe
     return PLAYER_SUCCESS;
 }
 
-
-
-PlayerResult playerChangeDuelResult(Map player_map, PlayerId first_player, PlayerId second_player,
-                                    Winner old_result, Winner new_result){
-    if (!player_map){
-        return PLAYER_NULL_ARGUMENT;
-    }
-    if (playerIdIsValid(first_player) && playerIdIsValid(second_player)){
-        return PLAYER_INVALID_ID;
-    }
-    PlayerData first_player_data = playerGetData(player_map, first_player);
-    PlayerData second_player_data = playerGetData(player_map, first_player);
-    
-    if (!first_player_data || !second_player_data){
-        return PLAYER_NOT_EXIST;
-    }
-    
-    if (old_result == FIRST_PLAYER){
-        first_player_data->num_of_wins--;
-        second_player_data->num_of_loses--;
-    }
-    else if (old_result == SECOND_PLAYER){
-        first_player_data->num_of_loses--;
-        second_player_data->num_of_wins--;
-    }
-    else{
-        first_player_data->num_of_draws--;
-        second_player_data->num_of_draws--;
-    }
-    
-    if (new_result == FIRST_PLAYER){
-        first_player_data->num_of_wins++;
-        second_player_data->num_of_loses++;
-    }
-    else if (new_result == SECOND_PLAYER){
-        first_player_data->num_of_loses++;
-        second_player_data->num_of_wins++;
-    }
-    else{
-        first_player_data->num_of_draws++;
-        second_player_data->num_of_draws++;
-    }
-    
-    return PLAYER_SUCCESS;
-    
-    
-    
-}
-
-
 bool playerUpdateData(PlayerData player_data1, PlayerData player_data2, UpdateMode value){
     if (!player_data1 || !player_data2){
         return false;
@@ -366,8 +364,6 @@ bool playerUpdateData(PlayerData player_data1, PlayerData player_data2, UpdateMo
     
     return true;
 }
-
-
 
 PlayerResult playerMapUpdateStatistics(Map main_map, Map update_map, bool destroy, UpdateMode value){
     if (!main_map || !update_map){
@@ -394,7 +390,6 @@ PlayerResult playerMapUpdateStatistics(Map main_map, Map update_map, bool destro
     return PLAYER_SUCCESS;
 }
 
-
 PlayerResult updatePlayerDataAfterOpponentQuit(Map player_map, PlayerId player_id, DuelResult game_result){
     assert(player_map);
     if (!player_map){
@@ -416,19 +411,6 @@ PlayerResult updatePlayerDataAfterOpponentQuit(Map player_map, PlayerId player_i
     return PLAYER_SUCCESS;
 }
 
-
-
-/**
-*   The winner of the tournament is the player with the highest score:
-*   player_score = ( num_of_wins * 2 + num_of_draws * 1 ) / ( num_of_games_of_player )
-*   If two players have the same score, the player with least losses will be chosen.
-*   If two players have the same number of losses, the player with the most wins will be chosen
-*   If two players have the same number of wins and losses,
-*   the player with smaller id will be chosen.
-*   Once the tournament is over, no games can be added for that tournament.
-*
- */
-
 int playerCalculateScore(PlayerData player_data){
     if (!player_data){
         return 0;
@@ -438,17 +420,10 @@ int playerCalculateScore(PlayerData player_data){
 }
 
 PlayerId playerCalculateWinner(Map player_map){
-    
     if (!player_map){
         return 0;
     }
-    /*
-    Map player_map_copy = playerMapCopy(player_map);
-    if (!player_map_copy){
-        return 0;
-    }
-    */
-    PlayerKey winner_key = mapGetFirst(player_map);///remember to free
+    PlayerKey winner_key = mapGetFirst(player_map);
     PlayerData winner_data = playerGetData(player_map, *winner_key);
     int winner_score = playerCalculateScore(winner_data);
     
@@ -482,10 +457,8 @@ PlayerId playerCalculateWinner(Map player_map){
     
     PlayerId winner_id = *winner_key;
     freePlayerKey(winner_key);
-    //playerDestroyMap(player_map_copy);
     return winner_id;
 }
-
 
 PlayerResult playerCalculateAveragePlayTime(Map player_map, PlayerId player_id, double* play_time){
     if (!player_map){
@@ -496,11 +469,12 @@ PlayerResult playerCalculateAveragePlayTime(Map player_map, PlayerId player_id, 
     }
     PlayerData player_data = playerGetData(player_map, player_id);
     if (!player_data){
-        return PLAYER_OUT_OF_MEMORY;
+        return PLAYER_NOT_EXIST;
     }
     
     if (player_data->num_of_games == 0){
-        return 0;
+        *play_time = (double) 0;
+        return PLAYER_SUCCESS;
     }
     *play_time = (double)(player_data->total_play_time)/player_data->num_of_games;
     return PLAYER_SUCCESS;

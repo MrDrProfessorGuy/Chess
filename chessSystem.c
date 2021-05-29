@@ -1,5 +1,4 @@
 #include "chessSystem.h"
-#include "game_map.h"
 #include "player_map.h"
 #include "tournament_map.h"
 #include <assert.h>
@@ -316,6 +315,9 @@ ChessResult chessAddTournament (ChessSystem chess, int tournament_id,
     if (!tournamentIdIsValid(tournament_id)){
         return CHESS_INVALID_ID;
     }
+    if (tournamentContains(chess->tournament_map, tournament_id)){
+        return CHESS_TOURNAMENT_ALREADY_EXISTS;
+    }
     if (!tournamentLocationIsValid(tournament_location)){
         return CHESS_INVALID_LOCATION;
     }
@@ -374,8 +376,8 @@ ChessResult chessAddGame(ChessSystem chess, int tournament_id, int first_player,
         return CHESS_OUT_OF_MEMORY;
     }
     int new_players = 0;
-    new_players += playerExists(tournament_player_map, first_player);
-    new_players += playerExists(tournament_player_map, second_player);
+    new_players += !playerExists(tournament_player_map, first_player);
+    new_players += !playerExists(tournament_player_map, second_player);
     
     if (addAndUpdatePlayersData(chess->player_map, first_player, second_player, winner, play_time) != CHESS_SUCCESS){
         gameRemove(tournament_game_map, first_player, second_player);
@@ -441,8 +443,7 @@ ChessResult chessRemoveTournament (ChessSystem chess, int tournament_id){
         return CHESS_OUT_OF_MEMORY;
     }
     assert(chess->player_map);
-    PlayerResult player_result = playerMapUpdateStatistics(chess->player_map, tournament_player_map, false, UNDO);
-    assert(player_result == PLAYER_SUCCESS);
+    playerMapUpdateStatistics(chess->player_map, tournament_player_map, false, UNDO);
 
     TournamentResult tournament_result = tournamentRemove(chess->tournament_map, tournament_id);
     return chessResultToTournamentResult(tournament_result);
@@ -515,7 +516,7 @@ ChessResult chessEndTournament (ChessSystem chess, int tournament_id){
     if (tournamentEnded(chess->tournament_map, tournament_id)){
         return CHESS_TOURNAMENT_ENDED;
     }
-    if (tournamentNumOfActiveGames(chess->tournament_map, tournament_id) <= 0){
+    if (tournamentNumOfGames(chess->tournament_map, tournament_id) <= 0){
         return CHESS_NO_GAMES;
     }
 
@@ -578,9 +579,9 @@ ChessResult chessSavePlayersLevels (ChessSystem chess, FILE* file){
     PlayerId player_id = playerGetMaxLevelAndId(player_map_copy, &max_level, true);
     
     while (playerIdIsValid(player_id)){
-        if (max_level > 0){
-            fprintf(file, "%d %.2f", player_id, max_level);
-        }
+        //if (max_level > 0){
+        fprintf(file, "%d %.2f\n", player_id, max_level);
+        //}
         player_id = playerGetMaxLevelAndId(player_map_copy, &max_level, true);
     }
     playerDestroyMap(player_map_copy);
