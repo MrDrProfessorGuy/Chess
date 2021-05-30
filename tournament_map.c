@@ -185,7 +185,7 @@ static TournamentData createTournamentData(const char* location, int max_games_p
         return NULL;
     }
     
-    tournament_data->location = malloc(sizeof(strlen(location) + 1));
+    tournament_data->location = malloc(strlen(location) + 1);
     strcpy(tournament_data->location, location);
     if (!tournament_data->location) {
         playerDestroyMap(tournament_data->player_map);
@@ -510,7 +510,7 @@ bool tournamentLocationIsValid(const char* location){
     int len = (int)strlen(location);
     
     if ('A' <= location[0] && location[0] <= 'Z'){
-        for (int letter = 1; letter < len; letter++) {
+        for (int letter = 1; letter < len-1; letter++) {
             if (!(('a' <= location[letter] && location[letter] <= 'z') || location[letter] == ' ')){
                 return false;
             }
