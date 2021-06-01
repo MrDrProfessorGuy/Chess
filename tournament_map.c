@@ -510,7 +510,7 @@ bool tournamentLocationIsValid(const char* location){
     int len = (int)strlen(location);
     
     if ('A' <= location[0] && location[0] <= 'Z'){
-        for (int letter = 1; letter < len-1; letter++) {
+        for (int letter = 1; letter < len; letter++) {
             if (!(('a' <= location[letter] && location[letter] <= 'z') || location[letter] == ' ')){
                 return false;
             }

@@ -29,18 +29,15 @@ struct chess_system_t{
     Map player_map;
 };
 
-
-
-/***************************************************************/
-/********************* Helper Functions *********************/
-/***************************************************************/
-
-
-
-
 /*************************************************************/
 /********************* Static Functions *********************/
 /***********************************************************/
+/**
+ * chessResultToTournamentResult - convert TournamentResult to ChessResult equivalent
+ * @param result - TournamentResult
+ * @return
+ *  ChessResult equivalent
+ */
 static ChessResult chessResultToTournamentResult(TournamentResult result){
     if (result == TOURNAMENT_OUT_OF_MEMORY){
         return CHESS_OUT_OF_MEMORY;
@@ -90,7 +87,12 @@ static ChessResult chessResultToTournamentResult(TournamentResult result){
     assert(result == TOURNAMENT_SUCCESS);
     return CHESS_SUCCESS;
 }
-
+/**
+ * chessResultToPlayerResult - convert PlayerResult to ChessResult equivalent
+ * @param result - PlayerResult
+ * @return
+ *  ChessResult equivalent
+ */
 static ChessResult chessResultToPlayerResult(PlayerResult result){
     if (result == PLAYER_OUT_OF_MEMORY){
         return CHESS_OUT_OF_MEMORY;
@@ -140,9 +142,25 @@ static ChessResult chessResultToPlayerResult(PlayerResult result){
     assert(result == PLAYER_SUCCESS);
     return CHESS_SUCCESS;
 }
-
-
-
+/**
+ * checkValidityForAddGame - check the validity of AddGame request
+ * @param chess
+ * @param tournament_id
+ * @param first_player
+ * @param second_player
+ * @param play_time
+ * @return
+ *     CHESS_NULL_ARGUMENT - if chess is NULL.
+ *     CHESS_INVALID_ID - if the tournament ID number, either the players or the winner is invalid or both players
+ *                        have the same ID number.
+ *     CHESS_TOURNAMENT_NOT_EXIST - if the tournament does not exist in the system.
+ *     CHESS_TOURNAMENT_ENDED - if the tournament already ended
+ *     CHESS_GAME_ALREADY_EXISTS - if there is already a game in the tournament with the same two players
+ *                                  (both were not removed).
+ *     CHESS_INVALID_PLAY_TIME - if the play time is negative.
+ *     CHESS_EXCEEDED_GAMES - if one of the players played the maximum number of games allowed
+ *     CHESS_SUCCESS - if game was added successfully.
+ */
 static ChessResult checkValidityForAddGame(ChessSystem chess, int tournament_id, int first_player,
                                            int second_player, int play_time){
     if (!chess){
@@ -180,48 +198,17 @@ static ChessResult checkValidityForAddGame(ChessSystem chess, int tournament_id,
     
     return CHESS_SUCCESS;
 }
-
-
-/*
- *
-
-**
- * Update 2 competing players data based on the game result .aka winner
+/**
+ * addAndUpdatePlayersData - add players if nesescary and update their statistics
  * @param player_map
  * @param player1_id
  * @param player2_id
  * @param winner
- *
-bool updatePlayersData(Map player_map, PlayerId player1_id, PlayerId player2_id,
-                              Winner winner, int play_time, UpdateMode value){
-    assert(player_map);
-    assert(playerIdIsValid(player1_id) && playerIdIsValid(player2_id));
-    
-    PlayerData player1_data = playerGetData(player_map, player1_id);
-    PlayerData player2_data = playerGetData(player_map, player2_id);
-    if (player1_data && player2_data){
-        player1_data->num_of_games += value;
-        player2_data->num_of_games += value;
-        player1_data->total_play_time += value*play_time;
-        player2_data->total_play_time += value*play_time;
-        if (winner == FIRST_PLAYER){
-            player1_data->num_of_wins += value;
-            player2_data->num_of_loses += value;
-        }
-        else if(winner == SECOND_PLAYER){
-            player1_data->num_of_loses += value;
-            player2_data->num_of_wins += value;
-        }
-        else{
-            player1_data->num_of_draws += value;
-            player2_data->num_of_draws += value;
-        }
-        return true;
-    }
-    return false;
-}
-
-*/
+ * @param play_time
+ * @return
+ *  CHESS_OUT_OF_MEMORY - if allocation failed
+ *  CHESS_SUCCESS - otherwise
+ */
 static ChessResult addAndUpdatePlayersData(Map player_map,PlayerId player1_id,
                                            PlayerId player2_id, Winner winner, int play_time){
     assert(player_map);
@@ -242,9 +229,6 @@ static ChessResult addAndUpdatePlayersData(Map player_map,PlayerId player1_id,
 /*************************************************************/
 /********************* Public Functions *********************/
 /***********************************************************/
-
-
-
 
 /**
  * chessCreate: create an empty chess system.
@@ -332,9 +316,6 @@ ChessResult chessAddTournament (ChessSystem chess, int tournament_id,
     
 }
 
-
-
-
 /**
  * chessAddGame: add a new match to a chess tournament.
  *
@@ -392,29 +373,7 @@ ChessResult chessAddGame(ChessSystem chess, int tournament_id, int first_player,
     tournamentUpdateStatistics(tournament_map,tournament_id, play_time, new_players);
     return CHESS_SUCCESS;
 }
-/*
-ChessResult chessAddGame2(ChessSystem chess, int tournament_id, int first_player,
-                         int second_player, Winner winner, int play_time){
-    if (!chess){
-        return CHESS_NULL_ARGUMENT;
-    }
-    
-    // if player exists nothing happens
-    if (playerAdd(chess->player_map, first_player) != PLAYER_SUCCESS){
-        return CHESS_OUT_OF_MEMORY;
-    }
-    if (playerAdd(chess->player_map, second_player) != PLAYER_SUCCESS){
-        return CHESS_OUT_OF_MEMORY;
-    }
-    
-    playerUpdateDuelResult(chess->player_map, first_player, second_player, play_time, winner, ADD);
-    
-    
-    return CHESS_SUCCESS;
-}
 
- */
- 
 /**
  * chessRemoveTournament: removes the tournament and all the games played in it from the chess system
  *                        updates all players statistics (wins, losses, draws, average play time).
