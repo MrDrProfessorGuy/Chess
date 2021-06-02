@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <assert.h>
 #include <stdio.h>
-
+//notmine
 /* Type for definning the list */
 typedef struct node {
     MapKeyElement key;
@@ -64,7 +64,7 @@ static Node nodeAllocate() {
  * NULL- If NULL pointer was sent to it or in case allocation memory failed
  * node_ptr- Pointer for the new node to be assigned to in case of succsses.
  */
-static Node nodeCreate(Map map, MapKeyElement key, MapDataElement data) {//removed size from here
+static Node nodeCreate(Map map, MapKeyElement key, MapDataElement data) {
     if (!map) {
         return NULL;
     }
@@ -107,7 +107,7 @@ static Node nodeCreate(Map map, MapKeyElement key, MapDataElement data) {//remov
  * NULL- If NULL pointer was sent to it or in case allocation memory failed
  * node_ptr- Pointer for the new copied node to be assigned to in case of succsses.
  */
-static Node nodeCopy(Map map, MapKeyElement key, MapDataElement data) {//is it okay to get map in order to use the copy and free functions? or should we save them in the node struct?
+static Node nodeCopy(Map map, MapKeyElement key, MapDataElement data) {
     
     Node node_ptr = nodeAllocate();
     if (!node_ptr) {
@@ -155,7 +155,7 @@ Map mapCreate(copyMapDataElements copyDataElement,
 
     map->size = 0;//map is empty at first and it was put it here because nodeCreate addresses the size
     
-    map->head = nodeCreate(map,NULL,NULL);//is this okay? sending NULL as ptr?
+    map->head = nodeCreate(map,NULL,NULL);
     //allocation failed
     if (!(map->head)) {
         free(map);//free what has already been allocated
@@ -173,7 +173,6 @@ Map mapCreate(copyMapDataElements copyDataElement,
     return map;
 }
 
-//maybe iterator should be NULL at first? 
 void mapDestroy(Map map) {
     if (!map) {
         return;
@@ -323,7 +322,6 @@ MapResult mapRemove(Map map, MapKeyElement keyElement) {
             map->size--;
             return MAP_SUCCESS;
         }
-        //added this, and again is this allowed? two? 
         previous_node = next_node;
         next_node = next_node->next;
     }
@@ -337,26 +335,19 @@ MapKeyElement mapGetFirst(Map map) {
     }
 
     map->iterator = map->head;
-
-    //we can't assume that copy always succeed, right? Ortal said no and the odf says yes
     MapKeyElement copy_key = mapGetNext(map);//next since the first one is deme
-    if (!copy_key) {
-        return NULL;
-    }
+                                                 //assume success as requested
+
     return copy_key;
 }
-//"or the iterator is at an invalid state"- return NULL: what does this mean?
-MapKeyElement mapGetNext(Map map) {//make sure there are no mekre katse at the end, gisha outside the does getNextNode covers it?
+MapKeyElement mapGetNext(Map map) {
     if (!map || !map->iterator->next) {
         return NULL;
     }
     map->iterator = map->iterator->next;
 
-    //we can't assume that copy always succeed, right? 
-    MapKeyElement copy_key = map->copyKeyElements(map->iterator->key);
-    if (!copy_key) {
-        return NULL;
-    }
+    MapKeyElement copy_key = map->copyKeyElements(map->iterator->key);//assume success as requested                                         //assume success as requested
+
     return copy_key;
 }
 
@@ -369,8 +360,6 @@ MapResult mapClear(Map map) {
 
     while (map->size>1) { //when it's one, we're left with the deme and we'll release it separately
         mapRemove(map, current_node->next->key);
-        //MapResult result= mapRemove(map, current_node->next->key);
-        //assert(result == MAP_SUCCESS);
     }
 
     assert(map->size == 1);//asserting it's 1 as supposed to be in order to remain only with
